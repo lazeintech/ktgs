@@ -1,0 +1,159 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+.clearfix {
+  clear: both;
+}
+.container-width {
+  width: 90%;
+  max-width: 1150px;
+  margin: 0 auto;
+}
+.logo-container {
+  float: left;
+  width: 50%;
+}
+.form {
+  border-radius: 3px;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.select {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 7px 10px;
+  border-radius: 2px;
+  color: #fff;
+  background-color: #554c57;
+  border: none;
+  height: 30px;
+}
+.label {
+  width: 100%;
+  display: block;
+}
+.tab {
+  text-decoration: none;
+  color: inherit;
+  padding: 7px 14px;
+  transition: opacity 0.3s;
+  display: inline-block;
+  border-radius: 3px;
+  margin-right: 10px;
+}
+.tab.tab-active {
+  background-color: #0d94e6;
+  color: white;
+}
+#ioe3e {
+  font-family: Tahoma, Geneva, sans-serif;
+  color: #000000;
+}
+#ix9si {
+  font-family: Tahoma, Geneva, sans-serif;
+  color: #000000;
+}
+#ih5f6 {
+  font-family: Tahoma, Geneva, sans-serif;
+  color: #000000;
+}
+#i967 {
+  background-image: url('"https://grapesjs.com/img/work-desk.jpg"');
+  background-repeat: repeat-y, no-repeat;
+  background-position: left top, center center;
+  background-attachment: scroll, scroll;
+  background-size: contain, cover;
+}
+#ifwdz {
+  font-family: Tahoma, Geneva, sans-serif;
+  color: #000000;
+}
+#i568v {
+  font-family: Tahoma, Geneva, sans-serif;
+  color: #000000;
+}
+#ief2t {
+  font-family: Tahoma, Geneva, sans-serif;
+  color: #000000;
+}
+.navbar-items-c {
+  display: inline-block;
+  float: right;
+}
+.navbar {
+  background-color: #222;
+  color: #ddd;
+  min-height: 50px;
+  width: 100%;
+}
+.navbar-container {
+  max-width: 950px;
+  margin: 0 auto;
+  width: 95%;
+}
+.navbar-container::after {
+  content: "";
+  clear: both;
+  display: block;
+}
+.navbar-brand {
+  vertical-align: top;
+  display: inline-block;
+  padding: 5px;
+  min-height: 50px;
+  min-width: 50px;
+  color: inherit;
+  text-decoration: none;
+}
+.navbar-menu {
+  padding: 10px 0;
+  display: block;
+  float: right;
+  margin: 0;
+}
+.navbar-menu-link {
+  margin: 0;
+  color: inherit;
+  text-decoration: none;
+  display: inline-block;
+  padding: 10px 15px;
+}
+.navbar-burger {
+  margin: 10px 0;
+  width: 45px;
+  padding: 5px 10px;
+  display: none;
+  float: right;
+  cursor: pointer;
+}
+.navbar-burger-line {
+  padding: 1px;
+  background-color: white;
+  margin: 5px 0;
+}
+@media fadeEffect {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 768px) {
+  .navbar-burger {
+    display: block;
+  }
+  .navbar-items-c {
+    display: none;
+    width: 100%;
+  }
+  .navbar-menu {
+    width: 100%;
+  }
+  .navbar-menu-link {
+    display: block;
+  }
+}

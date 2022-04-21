@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Cài đặt admin - Phần mềm kiểm tra giám sát</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="i5qg">
+        <div id="i967">
+            <div id="ieh4" class="container-width">
+                <div class="logo-container"></div>
+                <div class="clearfix"></div>
+            </div>
+            <div data-tabs="1" id="i1r88">
+                <div data-gjs="navbar" class="navbar">
+                    <div class="navbar-container" id="i2em1r">
+                        <a href="/" class="navbar-brand"></a>
+                        <div id="i3zlix" class="navbar-burger">
+                            <div class="navbar-burger-line"></div>
+                            <div class="navbar-burger-line"></div>
+                            <div class="navbar-burger-line"></div>
+                        </div>
+                        <div data-gjs="navbar-items" class="navbar-items-c">
+                            <nav data-gjs="navbar-menu" class="navbar-menu">
+                                <a href="#" class="navbar-menu-link" id="home">Trang chủ</a>
+                                <a href="#" class="navbar-menu-link" id="setting-menu">Cài đặt</a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action="/import" enctype="multipart/form-data" method="post">
+        <input type="file" id="studentList" name="studentList" value="Chọn DS">
+        <input type="submit" value="Nhập">
+    </form>
+    <script>
+        var items = document.querySelectorAll('#i3zlix');
+        for (var i = 0, len = items.length; i < len; i++) {
+            (function () {
+                var e, t = 0,
+                    n = function () {
+                        var e, t = document.createElement("void"),
+                            n = {
+                                transition: "transitionend",
+                                OTransition: "oTransitionEnd",
+                                MozTransition: "transitionend",
+                                WebkitTransition: "webkitTransitionEnd"
+                            };
+                        for (e in n)
+                            if (void 0 !== t.style[e]) return n[e]
+                    }(),
+                    r = function (e) {
+                        var t = window.getComputedStyle(e),
+                            n = t.display,
+                            r = (t.position, t.visibility, t.height, parseInt(t["max-height"]));
+                        if ("none" !== n && "0" !== r) return e.offsetHeight;
+                        e.style.height = "auto", e.style.display = "block", e.style.position = "absolute", e.style.visibility = "hidden";
+                        var i = e.offsetHeight;
+                        return e.style.height = "", e.style.display = "", e.style.position = "", e.style.visibility = "", i
+                    },
+                    i = function (e) {
+                        t = 1;
+                        var n = r(e),
+                            i = e.style;
+                        i.display = "block", i.transition = "max-height 0.25s ease-in-out", i.overflowY = "hidden", "" == i["max-height"] && (i["max-height"] = 0), 0 == parseInt(i["max-height"]) ? (i["max-height"] = "0", setTimeout(function () {
+                            i["max-height"] = n + "px"
+                        }, 10)) : i["max-height"] = "0"
+                    },
+                    a = function (r) {
+                        if (r.preventDefault(), !t) {
+                            var a = this.closest("[data-gjs=navbar]"),
+                                o = a.querySelector("[data-gjs=navbar-items]");
+                            i(o), e || (o.addEventListener(n, function () {
+                                t = 0;
+                                var e = o.style;
+                                0 == parseInt(e["max-height"]) && (e.display = "", e["max-height"] = "")
+                            }), e = 1)
+                        }
+                    };
+                "gjs-collapse" in this || this.addEventListener("click", a), this["gjs-collapse"] = 1
+            }.bind(items[i]))();
+        }
+
+        document.getElementById("home").addEventListener("click",
+            function () {
+                location.replace("http://" + location.host + "/home");
+            },
+            false
+        );
+    </script>
+</body>
+<html>
