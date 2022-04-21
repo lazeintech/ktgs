@@ -26,6 +26,10 @@
                         </div>
                         <div data-gjs="navbar-items" class="navbar-items-c">
                             <nav data-gjs="navbar-menu" class="navbar-menu">
+                                <a>Xin chào, <b id="user"></b></a>
+                                <script type="text/javascript">
+                                    document.getElementById("user").innerHTML = sessionStorage.getItem("username");
+                                </script>
                                 <a href="#" class="navbar-menu-link" id="home">Trang chủ</a>
                                 <a href="#" class="navbar-menu-link" id="setting-menu">Cài đặt</a>
                             </nav>
