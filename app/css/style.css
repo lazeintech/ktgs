@@ -61,7 +61,6 @@ body {
   color: #000000;
 }
 #i967 {
-  background-image: url('"https://grapesjs.com/img/work-desk.jpg"');
   background-repeat: repeat-y, no-repeat;
   background-position: left top, center center;
   background-attachment: scroll, scroll;
@@ -133,6 +132,38 @@ body {
   padding: 1px;
   background-color: white;
   margin: 5px 0;
+}
+.button {
+  width: 100%;
+  margin: 15px 0;
+  background-color: #785580;
+  border: none;
+  color: #fff;
+  border-radius: 2px;
+  padding: 7px 10px;
+  font-size: 1em;
+  cursor: pointer;
+}
+.input {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 7px 10px;
+  border-radius: 2px;
+  color: #fff;
+  background-color: #554c57;
+  border: none;
+}
+.row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  padding: 10px;
+}
+.cell {
+  min-height: 20px;
+  flex-grow: 1;
+  flex-basis: 100%;
 }
 @media fadeEffect {
   from {

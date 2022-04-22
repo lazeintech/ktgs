@@ -2,101 +2,352 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>Cài đặt admin - Phần mềm kiểm tra giám sát</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <title>Cài đặt admin - Phần mềm kiểm tra giám sát</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-
-    <div id="i5qg">
-        <div id="i967">
-            <div id="ieh4" class="container-width">
-                <div class="logo-container"></div>
-                <div class="clearfix"></div>
-            </div>
-            <div data-tabs="1" id="i1r88">
-                <div data-gjs="navbar" class="navbar">
-                    <div class="navbar-container" id="i2em1r">
-                        <a href="/" class="navbar-brand"></a>
-                        <div id="i3zlix" class="navbar-burger">
-                            <div class="navbar-burger-line"></div>
-                            <div class="navbar-burger-line"></div>
-                            <div class="navbar-burger-line"></div>
-                        </div>
-                        <div data-gjs="navbar-items" class="navbar-items-c">
-                            <nav data-gjs="navbar-menu" class="navbar-menu">
-                                <a>Xin chào, <b id="user"></b></a>
-                                <script type="text/javascript">
-                                    document.getElementById("user").innerHTML = sessionStorage.getItem("username");
-                                </script>
-                                <a href="#" class="navbar-menu-link" id="home">Trang chủ</a>
-                                <a href="#" class="navbar-menu-link" id="setting-menu">Cài đặt</a>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<body id="icnk" onload="onLoad()">
+  <div id="i5qg">
+    <div id="i967">
+      <div id="ieh4" class="container-width">
+        <div class="logo-container">
         </div>
+        <div class="clearfix">
+        </div>
+      </div>
+      <div data-tabs="1" id="i1r88">
+        <div data-gjs="navbar" class="navbar">
+          <div id="i2em1r" class="navbar-container">
+            <a href="/" class="navbar-brand"></a>
+            <div id="bar-burger" class="navbar-burger">
+              <div class="navbar-burger-line">
+              </div>
+              <div class="navbar-burger-line">
+              </div>
+              <div class="navbar-burger-line">
+              </div>
+            </div>
+            <div data-gjs="navbar-items" class="navbar-items-c">
+              <nav data-gjs="navbar-menu" class="navbar-menu">
+                <a>Xin chào, <b id="user">
+                  </b></a>
+                <script type="text/javascript">
+                  document.getElementById("user").innerHTML = sessionStorage.getItem("username");
+                </script>
+                <a href="#" id="home" class="navbar-menu-link">Trang chủ</a>
+                <a href="#" id="setting-menu" class="navbar-menu-link">Cài đặt</a>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <form action="/import" enctype="multipart/form-data" method="post">
-        <input type="file" id="studentList" name="studentList" value="Chọn DS">
-        <input type="submit" value="Nhập">
-    </form>
-    <script>
-        var items = document.querySelectorAll('#i3zlix');
-        for (var i = 0, len = items.length; i < len; i++) {
-            (function () {
-                var e, t = 0,
-                    n = function () {
-                        var e, t = document.createElement("void"),
-                            n = {
-                                transition: "transitionend",
-                                OTransition: "oTransitionEnd",
-                                MozTransition: "transitionend",
-                                WebkitTransition: "webkitTransitionEnd"
-                            };
-                        for (e in n)
-                            if (void 0 !== t.style[e]) return n[e]
-                    }(),
-                    r = function (e) {
-                        var t = window.getComputedStyle(e),
-                            n = t.display,
-                            r = (t.position, t.visibility, t.height, parseInt(t["max-height"]));
-                        if ("none" !== n && "0" !== r) return e.offsetHeight;
-                        e.style.height = "auto", e.style.display = "block", e.style.position = "absolute", e.style.visibility = "hidden";
-                        var i = e.offsetHeight;
-                        return e.style.height = "", e.style.display = "", e.style.position = "", e.style.visibility = "", i
-                    },
-                    i = function (e) {
-                        t = 1;
-                        var n = r(e),
-                            i = e.style;
-                        i.display = "block", i.transition = "max-height 0.25s ease-in-out", i.overflowY = "hidden", "" == i["max-height"] && (i["max-height"] = 0), 0 == parseInt(i["max-height"]) ? (i["max-height"] = "0", setTimeout(function () {
-                            i["max-height"] = n + "px"
-                        }, 10)) : i["max-height"] = "0"
-                    },
-                    a = function (r) {
-                        if (r.preventDefault(), !t) {
-                            var a = this.closest("[data-gjs=navbar]"),
-                                o = a.querySelector("[data-gjs=navbar-items]");
-                            i(o), e || (o.addEventListener(n, function () {
-                                t = 0;
-                                var e = o.style;
-                                0 == parseInt(e["max-height"]) && (e.display = "", e["max-height"] = "")
-                            }), e = 1)
-                        }
-                    };
-                "gjs-collapse" in this || this.addEventListener("click", a), this["gjs-collapse"] = 1
-            }.bind(items[i]))();
-        }
-
-        document.getElementById("home").addEventListener("click",
-            function () {
-                location.replace("http://" + location.host + "/home");
-            },
-            false
-        );
-    </script>
+  </div>
+  <div data-tabs="1" id="is6rr">
+    <nav data-tab-container="1" class="tab-container">
+      <a href="#tab1" data-tab="1" class="tab" id="tabid1">Tạo tài khoản</a>
+      <a href="#tab2" data-tab="1" class="tab" id="tabid2">Thêm lớp</a>
+      <a href="#tab3" data-tab="1" class="tab" id="tabid3">Phân công lớp</a>
+      <a href="#tab4" data-tab="1" class="tab" id="tabid4">Tuỳ chỉnh nội dung vi phạm</a>
+      <a href="#tab5" data-tab="1" class="tab" id="tabid5">Thống kê</a>
+    </nav>
+    <div id="tab1" data-tab-content="1" class="tab-content">
+      <form action="/api/add_user" class="form" id="ine15" method="post">
+        <div class="form-group">
+          <label class="label" id="i85xj">Tên đăng nhập:</label>
+          <input placeholder="Nhập tên đăng nhập" class="input" name="username" />
+          <label class="label" id="il004">Mật khẩu:</label>
+          <input placeholder="Nhập mật khẩu" class="input" name="password" />
+          <button type="submit" class="button" id="addUser">Tạo tài khoản</button>
+        </div>
+      </form>
+    </div>
+    <div id="tab2" data-tab-content="1" class="tab-content">
+      <form class="form" id="itc77" action="/api/import_classes" enctype="multipart/form-data" method="post">
+        <div class="form-group">
+          <label class="label" id="ivio6">Chọn file danh sách lớp để thêm:</label>
+          <input type="file" id="studentList" name="studentList" value="Chọn DS" />
+          <button type="submit" class="button">Thêm lớp</button>
+        </div>
+      </form>
+    </div>
+    <div id="tab3" data-tab-content="1" class="tab-content">
+      <form class="form" id="iepnx" action="/api/assign_job" method="post" onsubmit="return validate_assignment(this);">
+        <div class="form-group">
+          <label class="label">Lớp</label>
+          <select class="select" id="drop-classes" name="classCode">
+          </select>
+          <label class="label" id="i3hhi">B1 - Tổ chức thi</label>
+          <select class="select" id="drop-assignment-1" name="job1">
+          </select>
+          <label class="label" id="if4tl">B2 - Làm đề</label>
+          <select class="select" id="drop-assignment-2" name="job2">
+          </select>
+          <label class="label" id="iygwy">B3 - Coi thi</label>
+          <select class="select" id="drop-assignment-3" name="job3">
+          </select>
+          <label class="label" id="iz2gmg">B4 - Làm phách gửi bài</label>
+          <select class="select" id="drop-assignment-4" name="job4">
+          </select>
+          <label class="label" id="i6i3ix">B5 - Chấm thi</label>
+          <select class="select" id="drop-assignment-5" name="job5">
+          </select>
+          <label class="label">B6 - Thẩm định luận văn luận án</label>
+          <select class="select" id="drop-assignment-6" name="job6">
+          </select>
+          <button type="submit" class="button" id="assign">Phân công</button>
+        </div>
+      </form>
+    </div>
+    <div id="tab4" data-tab-content="1" class="tab-content">
+      <form class="form" action="/api/add_violation" method="post" onsubmit="return validate_violation(this);">
+        <div class="form-group">
+          <label class="label" id="iorzgu">Chọn công việc:</label>
+          <select class="select" id="drop-violation" name="job">
+            <option value="">- Select option -</option>
+            <option value="1">B1 - TỔ CHỨC THI</option>
+            <option value="2">B2 - LÀM ĐỀ</option>
+            <option value="3">B3 - COI THI</option>
+            <option value="4">B4 - LÀM PHÁCH GỬI BÀI</option>
+            <option value="5">B5 - CHẤM THI</option>
+            <option value="6">B6 - THẨM ĐỊNH LUẬN VĂN LUẬN ÁN</option>
+          </select>
+          Nội dung vi phạm đã có:
+          <div class="row" id="existing-violation">
+          </div>
+          <label class="label" id="ialv75">Thêm nội dung vi phạm:</label>
+          <input placeholder="Nội dung vi phạm" class="input" id="detail" name="detail" />
+          <button type="submit" class="button">Thêm</button>
+        </div>
+      </form>
+    </div>
+    <div id="tab5" data-tab-content="1" class="tab-content">
+      <form class="form" id="i1dt05">
+        <div class="form-group">
+          <label class="label" id="i1pr07">Thời gian từ:</label>
+          <input placeholder="Type here your name" class="input" />
+          <label class="label" id="iljkaf">Đến:</label>
+          <input type="email" placeholder="Type here your email" class="input" id="imi20z" />
+          <label class="label" id="ihy0nj">Lớp</label>
+          <select class="select" id="inia4l">
+            <option value="">- Select option -</option>
+            <option value="1">Option 1</option>
+          </select>
+          <label class="label" id="iq9km3">Cán bộ phụ trách</label>
+          <select class="select" id="iindyj">
+            <option value="">- Select option -</option>
+            <option value="1">Option 1</option>
+          </select>
+          <label class="label" id="is29nv"> Nội dung vi phạm</label>
+          <select class="select" id="i3w1cb">
+            <option value="">- Select option -</option>
+            <option value="1">Option 1</option>
+          </select>
+          <button type="submit" class="button">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
-<html>
+<script>
+  var items = document.querySelectorAll('#i1r88');
+  for (var i = 0, len = items.length; i < len; i++) {
+    (function () {
+      var t, e = this, a = "[data-tab]", n = document.body, r = n.matchesSelector || n.webkitMatchesSelector || n.mozMatchesSelector || n.msMatchesSelector, o = function () {
+        var a = e.querySelectorAll("[data-tab-content]") || [];
+        for (t = 0; t < a.length; t++)a[t].style.display = "none"
+      }
+        , i = function (n) {
+          var r = e.querySelectorAll(a) || [];
+          for (t = 0; t < r.length; t++) {
+            var i = r[t], s = i.className.replace("tab-active", "").trim();
+            i.className = s
+          }
+          o(), n.className += " tab-active";
+          var l = n.getAttribute("href"), c = e.querySelector(l);
+          c && (c.style.display = "")
+        }
+        , s = e.querySelector(".tab-active" + a);
+      s = s || e.querySelector(a), s && i(s), e.addEventListener("click", function (t) {
+        var e = t.target;
+        r.call(e, a) && i(e)
+      }
+      )
+    }
+      .bind(items[i]))();
+  }
+  var items = document.querySelectorAll('#is6rr');
+  for (var i = 0, len = items.length; i < len; i++) {
+    (function () {
+      var t, e = this, a = "[data-tab]", n = document.body, r = n.matchesSelector || n.webkitMatchesSelector || n.mozMatchesSelector || n.msMatchesSelector, o = function () {
+        var a = e.querySelectorAll("[data-tab-content]") || [];
+        for (t = 0; t < a.length; t++)a[t].style.display = "none"
+      }
+        , i = function (n) {
+          var r = e.querySelectorAll(a) || [];
+          for (t = 0; t < r.length; t++) {
+            var i = r[t], s = i.className.replace("tab-active", "").trim();
+            i.className = s
+          }
+          o(), n.className += " tab-active";
+          var l = n.getAttribute("href"), c = e.querySelector(l);
+          c && (c.style.display = "")
+        }
+        , s = e.querySelector(".tab-active" + a);
+      s = s || e.querySelector(a), s && i(s), e.addEventListener("click", function (t) {
+        var e = t.target;
+        r.call(e, a) && i(e)
+      }
+      )
+    }
+      .bind(items[i]))();
+  }
+  var items = document.querySelectorAll('#bar-burger');
+  for (var i = 0, len = items.length; i < len; i++) {
+    (function () {
+      var e, t = 0,
+        n = function () {
+          var e, t = document.createElement("void"),
+            n = {
+              transition: "transitionend",
+              OTransition: "oTransitionEnd",
+              MozTransition: "transitionend",
+              WebkitTransition: "webkitTransitionEnd"
+            };
+          for (e in n)
+            if (void 0 !== t.style[e]) return n[e]
+        }(),
+        r = function (e) {
+          var t = window.getComputedStyle(e),
+            n = t.display,
+            r = (t.position, t.visibility, t.height, parseInt(t["max-height"]));
+          if ("none" !== n && "0" !== r) return e.offsetHeight;
+          e.style.height = "auto", e.style.display = "block", e.style.position = "absolute", e.style.visibility = "hidden";
+          var i = e.offsetHeight;
+          return e.style.height = "", e.style.display = "", e.style.position = "", e.style.visibility = "", i
+        },
+        i = function (e) {
+          t = 1;
+          var n = r(e),
+            i = e.style;
+          i.display = "block", i.transition = "max-height 0.25s ease-in-out", i.overflowY = "hidden", "" == i["max-height"] && (i["max-height"] = 0), 0 == parseInt(i["max-height"]) ? (i["max-height"] = "0", setTimeout(function () {
+            i["max-height"] = n + "px"
+          }, 10)) : i["max-height"] = "0"
+        },
+        a = function (r) {
+          if (r.preventDefault(), !t) {
+            var a = this.closest("[data-gjs=navbar]"),
+              o = a.querySelector("[data-gjs=navbar-items]");
+            i(o), e || (o.addEventListener(n, function () {
+              t = 0;
+              var e = o.style;
+              0 == parseInt(e["max-height"]) && (e.display = "", e["max-height"] = "")
+            }), e = 1)
+          }
+        };
+      "gjs-collapse" in this || this.addEventListener("click", a), this["gjs-collapse"] = 1
+    }.bind(items[i]))();
+  }
+
+  document.getElementById("home").addEventListener("click",
+    function () {
+      location.replace(location.origin + "/home");
+    },
+    false
+  );
+
+  function onLoad() {
+    // get data from server and fill
+    // classes 
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var classes = JSON.parse(this.responseText);
+        var select = document.getElementById("drop-classes");
+        select.innerHTML = "<option value=\"\">- Chọn lớp -</option>";
+        classes.forEach(cls => {
+          var option = document.createElement("option");
+          option.value = cls.classCode;
+          option.text = cls.classCode;
+          select.appendChild(option);
+        });
+      }
+    };
+    xmlhttp.open("POST", location.origin + "/api/get_classes", true);
+    xmlhttp.send();
+
+    // user account
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var accounts = JSON.parse(this.responseText);
+        for (var job = 1; job <= 6; ++job) {
+          var select = document.getElementById("drop-assignment-" + job);
+          select.innerHTML = "<option value=\"\">- Chọn cán bộ -</option>";
+          accounts.forEach(account => {
+            var option = document.createElement("option");
+            option.value = account.username;
+            option.text = account.username;
+            select.appendChild(option);
+          });
+        }
+      }
+    };
+    xmlhttp.open("POST", location.origin + "/api/get_accounts", true);
+    xmlhttp.send();
+
+    // goto tab
+    var url_string = location.href;
+    var url = new URL(url_string);
+    var tab = url.searchParams.get("tab");
+    console.log(tab);
+    if (tab)
+      document.getElementById(tab).click();
+  }
+
+  function validate_assignment() {
+    if (document.getElementById("drop-classes").value == "") {
+      alert("Hãy chọn tất cả các ô dữ liệu");
+      return false;
+    }
+    for (var job = 1; job <= 6; ++job) {
+      var select = document.getElementById("drop-assignment-" + job);
+      if (select.value == "") {
+        alert("Hãy chọn tất cả các ô dữ liệu");
+        return false;
+      }
+    }
+
+    return confirm("Dữ liệu đã chính xác để phân công?");
+  }
+
+  document.getElementById("drop-violation").addEventListener("change",
+    function () {
+      document.getElementById("existing-violation").innerText = "";
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var violations = JSON.parse(this.responseText);
+          var cnt = 1;
+          violations.forEach(violation => {
+            document.getElementById("existing-violation").innerText
+              += cnt++ + ". " + violation.detail + "\n";
+          });
+        };
+      };
+      xmlhttp.open("POST", location.origin + "/api/get_violations", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify({ "job": this.value }));
+    });
+
+  function validate_violation() {
+    if (document.getElementById("drop-violation").value == "" ||
+      document.getElementById("detail").value == "") {
+      alert("Hãy chọn tất cả các ô dữ liệu");
+      return false;
+    }
+
+    return confirm("Dữ liệu đã chính xác?");
+  }
+</script>
