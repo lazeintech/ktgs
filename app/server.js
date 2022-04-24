@@ -38,6 +38,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "/css")));
 app.use(express.static(path.join(__dirname, "/html")));
+app.use(express.static(path.join(__dirname, "/img")));
 app.listen(port);
 
 // CONFIGURATIONs
@@ -105,7 +106,7 @@ app.get("/home", function (req, res) {
         <meta charset="utf-8">
       </head>
         <body>
-        Hãy đăng nhập. <br/>
+        Bạn chưa đăng nhập. <br/>
         <form action="/">
             <input type="submit" value="OK" />
         </form>
@@ -132,7 +133,7 @@ app.get("/setting", function (req, res) {
         <meta charset="utf-8">
       </head>
         <body>
-        Hãy đăng nhập. <br/>
+        Bạn chưa đăng nhập. <br/>
         <form action="/">
             <input type="submit" value="OK" />
         </form>
@@ -278,7 +279,9 @@ app.post(
 
       // Reading line by line
       const allLines = xlData.split(/\r\n|\n/);
-      let className = "";
+      let classCode = "";
+      let semesterCode = "";
+      let skipClassAndSemester = false;
       allLines.forEach((line) => {
         allCells = line.split(",");
         // skip empty line
@@ -286,40 +289,57 @@ app.post(
 
         // parsing class, semester
         allCells.forEach((cell) => {
-          // if (cell.includes("Học phần:")) {
-          //   tmp = cell.split(":");
-          //   console.log("Học phần: " + tmp[1].replace('"', "").replace(/\s/g, ""));
-          //   return;
-          // }
-          if (cell.includes("khoá:")) {
+          if (!semesterCode && cell.includes("Học phần:")) {
             tmp = cell.split(":");
-            className = tmp[1].replace('"', "").replace(/\s/g, "");
-            console.log("Lớp-khoá: " + className);
-            connection.query(
-              "INSERT INTO `nodelogin`.`classes` (`name`) VALUES (?)",
-              [className],
-              function (error, results, fields) {
-                // If there is an issue with the query, output the error
-                if (error) {
-                  if (error.code === "ER_DUP_ENTRY") {
-                    console.log("Lớp đã tồn tại trong DB.");
-                    return;
-                  } else {
-                    res.statusCode = 400;
-                    res.end(error);
-                  }
-                }
-                // If success
-                if (results.affectedRows > 0) {
-                  console.log("Đã thêm lớp " + className + " vào DB.");
-                } else {
-                  console.log("Không thể thêm danh sách lớp!");
-                }
-              }
-            );
+            semesterCode = tmp[1].replace('"', "").replace(/\s/g, "");
+            console.log("Học phần: " + semesterCode);
+            return;
+          }
+          if (!classCode && cell.includes("khoá:")) {
+            tmp = cell.split(":");
+            classCode = tmp[1].replace('"', "").replace(/\s/g, "");
+            console.log("Lớp-khoá: " + classCode);
             return;
           }
         });
+
+        if (!skipClassAndSemester && classCode && semesterCode) {
+          skipClassAndSemester = true;
+          connection.query(
+            "INSERT INTO `nodelogin`.`classes` (`classCode`) VALUES (?)",
+            [classCode],
+            function (error, results, fields) {
+              // If there is an issue with the query, output the error
+              if (error) {
+                if (error.code === "ER_DUP_ENTRY") {
+                  console.log("Lớp đã tồn tại trong DB.");
+                } else {
+                  res.statusCode = 400;
+                  res.end(error);
+                }
+              }
+              // If success
+              console.log("Đã thêm lớp " + classCode + " vào DB.");
+            }
+          );
+          connection.query(
+            "INSERT INTO `nodelogin`.`semesters` (`classCode`, `semesterCode`) VALUES (?, ?)",
+            [classCode, semesterCode],
+            function (error, results, fields) {
+              // If there is an issue with the query, output the error
+              if (error) {
+                if (error.code === "ER_DUP_ENTRY") {
+                  console.log("Học phần đã tồn tại trong DB.");
+                } else {
+                  res.statusCode = 400;
+                  res.end(error);
+                }
+              }
+              // If success
+              console.log("Đã thêm học phần " + semesterCode + " vào DB.");
+            }
+          );
+        }
 
         // parsing students
         if (isNumeric(allCells[0])) {
@@ -328,12 +348,11 @@ app.post(
           stdCode = tmp[2];
           stdLMName = tmp[3];
           stdFName = tmp[4];
-          // TODO: try catch
           connection.query(
             "INSERT INTO `nodelogin`.`students` \
-              (`className`, `stdCode`, `stdFName`, `stdLMName`) \
+              (`classCode`, `stdCode`, `stdFName`, `stdLMName`) \
               VALUES(?, ?, ?, ?)",
-            [className, stdCode, stdFName, stdLMName],
+            [classCode, stdCode, stdFName, stdLMName],
             function (error, results, fields) {
               // If there is an issue with the query, output the error
               if (error) {
@@ -390,14 +409,63 @@ app.post("/api/get_classes", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
   );
 });
 
-// get_classes
+// get_semesters
+app.post("/api/get_semesters", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "SELECT * FROM `nodelogin`.`semesters` WHERE classCode = ?",
+    [data.classCode],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      res.statusCode = 200;
+      res.send(results);
+    }
+  );
+});
+
+// get_students
+app.post("/api/get_students", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "SELECT * FROM `nodelogin`.`students` WHERE classCode = ?",
+    [data.classCode],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      res.statusCode = 200;
+      res.send(results);
+    }
+  );
+});
+
+// get_accounts
 app.post("/api/get_accounts", function (req, res) {
   if (!req.session.loggedin) {
     res.statusCode = 400;
@@ -413,7 +481,6 @@ app.post("/api/get_accounts", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
@@ -428,7 +495,7 @@ app.post("/api/assign_job", function (req, res) {
     return;
   }
   const data = req.body;
-  console.log("body: %j", data);
+  console.log("%s: %j", req.path, data);
   connection.query(
     "INSERT INTO `nodelogin`.`job_assignments` (`classCode`, `job1`, `job2`, `job3`, `job4`, `job5`, `job6`) VALUES(?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE job6 = ?",
     [
@@ -467,15 +534,15 @@ app.post("/api/assign_job", function (req, res) {
     </html>`);
 });
 
-// get_violations
-app.post("/api/get_violations", function (req, res) {
+// get_violation_detail
+app.post("/api/get_violation_detail", function (req, res) {
   if (!req.session.loggedin) {
     res.statusCode = 400;
     res.end("Login first!");
     return;
   }
   const data = req.body;
-  console.log("body: %j", data);
+  console.log("%s: %j", req.path, data);
   connection.query(
     "SELECT * FROM `nodelogin`.`violation_detail` WHERE job = ?",
     [data.job],
@@ -493,15 +560,15 @@ app.post("/api/get_violations", function (req, res) {
   );
 });
 
-// add_violation
-app.post("/api/add_violation", function (req, res) {
+// add_violation_detail
+app.post("/api/add_violation_detail", function (req, res) {
   if (!req.session.loggedin) {
     res.statusCode = 400;
     res.end("Login first!");
     return;
   }
   const data = req.body;
-  console.log("body: %j", data);
+  console.log("%s: %j", req.path, data);
   connection.query(
     "INSERT INTO `nodelogin`.`violation_detail` (`job`, `detail`) VALUES(?, ?)",
     [data.job, data.detail],
@@ -529,4 +596,74 @@ app.post("/api/add_violation", function (req, res) {
         </form>
       </body>
     </html>`);
+});
+
+// get_violation_records
+app.post("/api/get_violation_records", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "SELECT violation_detail.detail \
+      FROM nodelogin.violation_detail \
+      INNER JOIN nodelogin.violation_records \
+      ON violation_records.detailid = violation_detail.detailid \
+      WHERE ( \
+        violation_records.classCode = ? \
+        AND violation_records.semesterCode = ? \
+        AND violation_records.job = ? \
+        )",
+    [data.classCode, data.semesterCode, data.job],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      res.statusCode = 200;
+      res.send(results);
+    }
+  );
+});
+
+// add_violation_records
+app.post("/api/add_violation_records", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  detail = JSON.parse(data.detailArr);
+  if (!detail.length) {
+    res.statusCode = 400;
+    res.end("Chưa có dữ liệu vi phạm");
+    return;
+  }
+
+  let query =
+    "INSERT INTO `nodelogin`.`violation_records` (`classCode`, `semesterCode`, `stdCode`, `job`, `detailId`, `createdBy`, `createdDate`) VALUES ";
+  for (i = 0; i < data.count; ++i) {
+    query += `('${data.classCode}', '${data.semesterCode}', '${data.stdCode}', '${data.job}', '${detail[i].detailId}', '${req.session.username}', '${data.date}')`;
+    if (i + 1 == data.count) query += "";
+    else query += ",";
+  }
+  console.log(query);
+  connection.query(query, function (error, results, fields) {
+    // If there is an issue with the query, output the error
+    if (error) {
+      console.log(error);
+      throw error;
+    }
+    // If success
+    console.log(results);
+  });
+  res.statusCode = 200;
+  res.end();
 });

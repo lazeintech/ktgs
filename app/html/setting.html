@@ -101,7 +101,7 @@
       </form>
     </div>
     <div id="tab4" data-tab-content="1" class="tab-content">
-      <form class="form" action="/api/add_violation" method="post" onsubmit="return validate_violation(this);">
+      <form class="form" action="/api/add_violation_detail" method="post" onsubmit="return validate_violation(this);">
         <div class="form-group">
           <label class="label" id="iorzgu">Chọn công việc:</label>
           <select class="select" id="drop-violation" name="job">
@@ -319,7 +319,7 @@
       }
     }
 
-    return confirm("Dữ liệu đã chính xác để phân công?");
+    return confirm("Xác nhận phân công?");
   }
 
   document.getElementById("drop-violation").addEventListener("change",
@@ -336,7 +336,7 @@
           });
         };
       };
-      xmlhttp.open("POST", location.origin + "/api/get_violations", true);
+      xmlhttp.open("POST", location.origin + "/api/get_violation_detail", true);
       xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xmlhttp.send(JSON.stringify({ "job": this.value }));
     });
@@ -348,6 +348,6 @@
       return false;
     }
 
-    return confirm("Dữ liệu đã chính xác?");
+    return confirm("Xác nhận nội dung vi phạm?");
   }
 </script>
