@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Trang chủ - Phần mềm kiểm tra giám sát</title>
+  <title>Phần mềm kiểm tra giám sát</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -30,8 +30,9 @@
                 <script type="text/javascript">
                   document.getElementById("user").innerHTML = sessionStorage.getItem("username");
                 </script>
-                <a href="#" class="navbar-menu-link" id="home">Trang chủ</a>
-                <a href="#" class="navbar-menu-link" id="setting-menu">Cài đặt</a>
+                <a href="/logout">Đăng xuất</a>
+                <!-- <a href="#" class="navbar-menu-link" id="home">Trang chủ</a>
+                <a href="#" class="navbar-menu-link" id="setting-menu">Cài đặt</a> -->
               </nav>
             </div>
           </div>
@@ -57,20 +58,25 @@
         <label class="label">Lớp phụ trách:</label>
         <select class="select" id="drop-classes" name="classCode" required> </select>
         <label class="label">Học phần:</label>
-        <select class="select" id="drop-semesters" name="semesterCode" required> </select>
+        <input class="input" type="text" id="text-semester" name="semesterCode" required /> </input>
+        <label class="label">Nội dung vi phạm:</label>
+        <select class="select" type="text" id="drop-violation" name="violation" required /> </select>
+        <!-- <select class="select" id="drop-semesters" name="semesterCode" required> </select>
         <label class="label">Học viên:</label>
-        <select class="select" id="drop-students" name="stdCode" required> </select>
+        <select class="select" id="drop-students" name="stdCode" required> </select> -->
         <label class="label">Ngày tháng:</label>
-        <input type="date" id="date" name="date" required /><br /><br />
+        <input type="date" id="input-date" name="date" required /><br /><br />
         <label class="label">Nội dung vi phạm:</label>
         <div id="i5aeml">
           <table id="tbl-violations" style="width:100%">
             <tbody>
               <tr>
-                <td style="width:5%">STT</td>
-                <td style="width:55%">Nội dung</td>
-                <td style="width:30%">Tải lên</td>
-                <td style="width:20%">Tải xuống</td>
+                <td style="width:2%">STT</td>
+                <td style="width:10%">Ngày</td>
+                <!-- <td style="width:10%">Mã HV</td> -->
+                <td style="width:70%">Nội dung</td>
+                <td style="width:4%"></td>
+                <td style="width:4%"></td>
               </tr>
             </tbody>
           </table><br />
@@ -158,12 +164,12 @@
       }.bind(items[i]))();
     }
 
-    document.getElementById("setting-menu").addEventListener("click",
-      function () {
-        location.replace(location.origin + "/setting");
-      },
-      false
-    );
+    // document.getElementById("setting-menu").addEventListener("click",
+    //   function () {
+    //     location.replace(location.origin + "/setting");
+    //   },
+    //   false
+    // );
 
     function onLoad() {
       loadTab();
@@ -176,9 +182,11 @@
         document.getElementById(tab).click();
     }
 
+    let newViolationCount = 0;
     function loadTab() {
       newViolationCount = 0;
-      document.getElementById("drop-semesters").innerHTML = '';
+      document.getElementById("text-semester").innerHTML = '';
+      document.getElementById("input-date").value = '';
       var table = document.getElementById("tbl-violations");
       for (var i = 1; i < table.rows.length;) {
         table.deleteRow(i);
@@ -200,133 +208,161 @@
       };
       xmlhttp.open("POST", location.origin + "/api/get_classes", true);
       xmlhttp.send();
+
+      // load data into dropdown violation
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var violations = JSON.parse(this.responseText);
+          select = document.getElementById("drop-violation");
+          select.innerHTML = "<option value=\"\">- Chọn nội dung -</option>";
+          violations.forEach(violation => {
+            var option = document.createElement("option");
+            option.value = violation.detailId;
+            option.text = violation.detail;
+            select.appendChild(option);
+          });
+        };
+      };
+      xmlhttp.open("POST", location.origin + "/api/get_violation_detail", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify({
+        "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
+      }));
     }
 
-    document.getElementById("drop-classes").addEventListener("change",
-      function () {
-        // semesters
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            var semesters = JSON.parse(this.responseText);
-            var select = document.getElementById("drop-semesters");
-            select.innerHTML = "<option value=\"\">- Chọn học phần -</option>";
-            semesters.forEach(sem => {
-              var option = document.createElement("option");
-              option.value = sem.semesterCode;
-              option.text = sem.semesterCode;
-              select.appendChild(option);
-            });
-          }
-        };
-        xmlhttp.open("POST", location.origin + "/api/get_semesters", true);
-        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xmlhttp.send(JSON.stringify({ "classCode": document.getElementById("drop-classes").value }));
-      },
-      false
-    );
+    // document.getElementById("drop-classes").addEventListener("change",
+    //   function () {
+    //     // semesters
+    //     var xmlhttp = new XMLHttpRequest();
+    //     xmlhttp.onreadystatechange = function () {
+    //       if (this.readyState == 4 && this.status == 200) {
+    //         var semesters = JSON.parse(this.responseText);
+    //         var select = document.getElementById("drop-semesters");
+    //         select.innerHTML = "<option value=\"\">- Chọn học phần -</option>";
+    //         semesters.forEach(sem => {
+    //           var option = document.createElement("option");
+    //           option.value = sem.semesterCode;
+    //           option.text = sem.semesterCode;
+    //           select.appendChild(option);
+    //         });
+    //       }
+    //     };
+    //     xmlhttp.open("POST", location.origin + "/api/get_semesters", true);
+    //     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    //     xmlhttp.send(JSON.stringify({ "classCode": document.getElementById("drop-classes").value }));
+    //   },
+    //   false
+    // );
 
-    document.getElementById("drop-semesters").addEventListener("change",
-      function () {
-        // violations
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            var table = document.getElementById("tbl-violations");
-            for (var i = 1; i < table.rows.length;) {
-              table.deleteRow(i);
-            }
+    // document.getElementById("drop-semesters").addEventListener("change",
+    //   function () {
+    //     // violations
+    //     var xmlhttp = new XMLHttpRequest();
+    //     xmlhttp.onreadystatechange = function () {
+    //       if (this.readyState == 4 && this.status == 200) {
+    //         var table = document.getElementById("tbl-violations");
+    //         for (var i = 1; i < table.rows.length;) {
+    //           table.deleteRow(i);
+    //         }
 
-            var vRecords = JSON.parse(this.responseText);
-            vRecords.forEach(record => {
-              var totalRowCount = table.rows.length;
-              var row = table.insertRow(totalRowCount);
-              var cell1 = row.insertCell(0);
-              cell1.innerHTML = totalRowCount;
-              var cell2 = row.insertCell(1);
-              cell2.innerHTML = record.detail;
-              var cell3 = row.insertCell(2);
-              cell3.innerHTML = "";
-              var cell4 = row.insertCell(3);
-              cell4.innerHTML =
-                ' <a href="/img/download.png" download>\
-                    <img src="/img/download.png" width="24" height = "24" >\
-                    </img> \
-                  </a > ';
-            });
-          }
-        };
-        xmlhttp.open("POST", location.origin + "/api/get_violation_records", true);
-        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xmlhttp.send(JSON.stringify({
-          "classCode": document.getElementById("drop-classes").value,
-          "semesterCode": document.getElementById("drop-semesters").value,
-          "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
-        }));
+    //         var vRecords = JSON.parse(this.responseText);
+    //         vRecords.forEach(record => {
+    //           var totalRowCount = table.rows.length;
+    //           var row = table.insertRow(totalRowCount);
+    //           cellCnt = 0;
+    //           var number = row.insertCell(cellCnt++);
+    //           number.innerHTML = totalRowCount;
+    //           var date = row.insertCell(cellCnt++);
+    //           date.innerHTML = record.createdDate;
+    //           var stdCode = row.insertCell(cellCnt++);
+    //           stdCode.innerHTML = record.stdCode;
+    //           var violation = row.insertCell(cellCnt++);
+    //           violation.innerHTML = record.detail;
+    //           var upload = row.insertCell(cellCnt++);
+    //           upload.innerHTML = "";
+    //           var download = row.insertCell(cellCnt++);
+    //           download.innerHTML =
+    //             ' <a href="/img/download.png" download>\
+    //                 <img src="/img/download.png" width="24" height = "24" >\
+    //                 </img> \
+    //               </a > ';
+    //         });
+    //       }
+    //     };
+    //     xmlhttp.open("POST", location.origin + "/api/get_violation_records", true);
+    //     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    //     xmlhttp.send(JSON.stringify({
+    //       "classCode": document.getElementById("drop-classes").value,
+    //       "semesterCode": document.getElementById("drop-semesters").value,
+    //       "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
+    //     }));
 
-        // students
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            var students = JSON.parse(this.responseText);
-            var select = document.getElementById("drop-students");
-            select.innerHTML = '<option value="">- Chọn mã Học viên -</option>';
-            students.forEach(student => {
-              var option = document.createElement("option");
-              option.value = student.stdCode;
-              option.text = student.stdCode;
-              select.appendChild(option);
-            });
-          }
-        };
-        xmlhttp.open("POST", location.origin + "/api/get_students", true);
-        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xmlhttp.send(JSON.stringify({
-          "classCode": document.getElementById("drop-classes").value
-        }));
-      },
-      false
-    );
+    // students
+    // var xmlhttp = new XMLHttpRequest();
+    // xmlhttp.onreadystatechange = function () {
+    //   if (this.readyState == 4 && this.status == 200) {
+    //     var students = JSON.parse(this.responseText);
+    //     var select = document.getElementById("drop-students");
+    //     select.innerHTML = '<option value="">- Chọn mã Học viên -</option>';
+    //     students.forEach(student => {
+    //       var option = document.createElement("option");
+    //       option.value = student.stdCode;
+    //       option.text = student.stdCode;
+    //       select.appendChild(option);
+    //     });
+    //   }
+    // };
+    // xmlhttp.open("POST", location.origin + "/api/get_students", true);
+    // xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    // xmlhttp.send(JSON.stringify({
+    //   "classCode": document.getElementById("drop-classes").value
+    // }));
 
-    let newViolationCount = 0;
     document.getElementById("addViolationRecord").addEventListener("click",
       function () {
+        if (
+          !document.getElementById("drop-classes").value ||
+          !document.getElementById("text-semester").value ||
+          !document.getElementById("drop-violation").value ||
+          !document.getElementById("input-date").value
+        ) {
+          alert("Hãy chọn lớp, học phần, nội dung vi phạm và ngày tháng!");
+          return;
+        }
+
         var table = document.getElementById("tbl-violations");
         var totalRowCount = table.rows.length;
         var row = table.insertRow(totalRowCount);
-        var cell1 = row.insertCell(0);
-        cell1.innerHTML = totalRowCount;
-        var cell2 = row.insertCell(1);
-        cell2.innerHTML = `<select class="select" id="drop-violation-${newViolationCount
-          }" required> </select>`;
-        var cell3 = row.insertCell(2);
-        cell3.innerHTML = '<input type="file">';
-        var cell4 = row.insertCell(3);
-        cell4.innerHTML =
+        cellCnt = 0;
+
+        var number = row.insertCell(cellCnt++);
+        number.innerHTML = totalRowCount;
+
+        var date = row.insertCell(cellCnt++);
+        tmps = document.getElementById("input-date").value.split("-");
+        date.innerHTML = tmps[2] + '/' + tmps[1] + '/' + tmps[0];
+
+        // var stdCode = row.insertCell(cellCnt++);
+        // stdCode.innerHTML = document.getElementById("drop-students").value;
+
+        var violation = row.insertCell(cellCnt++);
+        violation.innerHTML =
+          `<input class="input-cell" id="violation-info-${newViolationCount++}" required> </input>`;
+
+        var upload = row.insertCell(cellCnt++);
+        upload.innerHTML =
+          ' <a upload>\
+              <img src="/img/upload.png" width="24" height = "24" >\
+              </img> \
+            </a > ';
+
+        var download = row.insertCell(cellCnt++);
+        download.innerHTML =
           ' <a href="/img/download.png" download>\
               <img src="/img/download.png" width="24" height = "24" >\
               </img> \
             </a > ';
-
-        // load data into dropdown
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-            var violations = JSON.parse(this.responseText);
-            select = document.getElementById("drop-violation-" + newViolationCount++);
-            violations.forEach(violation => {
-              var option = document.createElement("option");
-              option.value = violation.detailId;
-              option.text = violation.detail;
-              select.appendChild(option);
-            });
-          };
-        };
-        xmlhttp.open("POST", location.origin + "/api/get_violation_detail", true);
-        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xmlhttp.send(JSON.stringify({
-          "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
-        }));
       },
       false
     );
@@ -337,19 +373,20 @@
 
       const formData = new FormData(event.target);
       // Build the data object.
-      formData.append('count', newViolationCount);
+      formData.append('job', document.getElementsByClassName('tab-active')[0].getAttribute('value'));
+      formData.append('detailId', parseInt(document.getElementById("drop-violation").value));
       var detailArr = [];
+      console.log("newViolationCount " + newViolationCount)
       for (i = 0; i < newViolationCount; ++i) {
         detailArr.push({
-          'detailId': parseInt(document.getElementById("drop-violation-" + i).value)
+          'detailInfo': document.getElementById(`violation-info-${i}`).value
         })
       }
+      console.log(detailArr);
       formData.append('detailArr', JSON.stringify(detailArr));
-      formData.append('job', document.getElementsByClassName('tab-active')[0].getAttribute('value'));
 
       const data = {};
       formData.forEach((value, key) => (data[key] = value));
-      // Log the data.
       console.log(data);
 
       var xmlhttp = new XMLHttpRequest();

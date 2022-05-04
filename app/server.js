@@ -38,7 +38,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "/css")));
 app.use(express.static(path.join(__dirname, "/html")));
-app.use(express.static(path.join(__dirname, "/img")));
+app.use("/img", express.static(path.join(__dirname, "/img")));
 app.listen(port);
 
 // CONFIGURATIONs
@@ -77,8 +77,9 @@ app.post("/auth", function (req, res) {
           // Authenticate the user
           req.session.loggedin = true;
           req.session.username = username;
-          // Redirect to home page
-          res.redirect("/home");
+          // Redirect to home/setting page
+          if (username == "admin") res.redirect("/setting");
+          else res.redirect("/home");
         } else {
           res.send("Tên đăng nhập hoặc Mật khẩu không đúng!");
           res.end();
@@ -140,6 +141,13 @@ app.get("/setting", function (req, res) {
       </body>
     </html>`);
   }
+});
+
+// Logout
+app.get("/logout", function (req, res, next) {
+  req.session.destroy(function (err) {
+    res.redirect("/");
+  });
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -254,9 +262,6 @@ app.post(
     }
     const file = req.file;
     if (!file) {
-      // const error = new Error("Hãy chọn file.");
-      // error.httpStatusCode = 400;
-      // return next(error);
       res.statusCode = 400;
       res.end(`
         <html>
@@ -289,12 +294,12 @@ app.post(
 
         // parsing class, semester
         allCells.forEach((cell) => {
-          if (!semesterCode && cell.includes("Học phần:")) {
-            tmp = cell.split(":");
-            semesterCode = tmp[1].replace('"', "").replace(/\s/g, "");
-            console.log("Học phần: " + semesterCode);
-            return;
-          }
+          // if (!semesterCode && cell.includes("Học phần:")) {
+          //   tmp = cell.split(":");
+          //   semesterCode = tmp[1].replace('"', "").replace(/\s/g, "");
+          //   console.log("Học phần: " + semesterCode);
+          //   return;
+          // }
           if (!classCode && cell.includes("khoá:")) {
             tmp = cell.split(":");
             classCode = tmp[1].replace('"', "").replace(/\s/g, "");
@@ -303,7 +308,7 @@ app.post(
           }
         });
 
-        if (!skipClassAndSemester && classCode && semesterCode) {
+        if (!skipClassAndSemester && classCode /*&& semesterCode*/) {
           skipClassAndSemester = true;
           connection.query(
             "INSERT INTO `nodelogin`.`classes` (`classCode`) VALUES (?)",
@@ -322,23 +327,23 @@ app.post(
               console.log("Đã thêm lớp " + classCode + " vào DB.");
             }
           );
-          connection.query(
-            "INSERT INTO `nodelogin`.`semesters` (`classCode`, `semesterCode`) VALUES (?, ?)",
-            [classCode, semesterCode],
-            function (error, results, fields) {
-              // If there is an issue with the query, output the error
-              if (error) {
-                if (error.code === "ER_DUP_ENTRY") {
-                  console.log("Học phần đã tồn tại trong DB.");
-                } else {
-                  res.statusCode = 400;
-                  res.end(error);
-                }
-              }
-              // If success
-              console.log("Đã thêm học phần " + semesterCode + " vào DB.");
-            }
-          );
+          // connection.query(
+          //   "INSERT INTO `nodelogin`.`semesters` (`classCode`, `semesterCode`) VALUES (?, ?)",
+          //   [classCode, semesterCode],
+          //   function (error, results, fields) {
+          //     // If there is an issue with the query, output the error
+          //     if (error) {
+          //       if (error.code === "ER_DUP_ENTRY") {
+          //         console.log("Học phần đã tồn tại trong DB.");
+          //       } else {
+          //         res.statusCode = 400;
+          //         res.end(error);
+          //       }
+          //     }
+          //     // If success
+          //     console.log("Đã thêm học phần " + semesterCode + " vào DB.");
+          //   }
+          // );
         }
 
         // parsing students
@@ -608,7 +613,11 @@ app.post("/api/get_violation_records", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "SELECT violation_detail.detail \
+    "SELECT \
+        violation_detail.detail, \
+        violation_records.stdCode, \
+        DATE_FORMAT (violation_records.createdDate, '%d/%m/%Y') as createdDate, \
+        violation_records.createdBy \
       FROM nodelogin.violation_detail \
       INNER JOIN nodelogin.violation_records \
       ON violation_records.detailid = violation_detail.detailid \
@@ -625,6 +634,7 @@ app.post("/api/get_violation_records", function (req, res) {
         throw error;
       }
       // If success
+      console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
@@ -640,18 +650,26 @@ app.post("/api/add_violation_records", function (req, res) {
   }
   const data = req.body;
   console.log("%s: %j", req.path, data);
-  detail = JSON.parse(data.detailArr);
-  if (!detail.length) {
+  detailArr = JSON.parse(data.detailArr);
+  if (!detailArr.length) {
     res.statusCode = 400;
     res.end("Chưa có dữ liệu vi phạm");
     return;
   }
 
   let query =
-    "INSERT INTO `nodelogin`.`violation_records` (`classCode`, `semesterCode`, `stdCode`, `job`, `detailId`, `createdBy`, `createdDate`) VALUES ";
-  for (i = 0; i < data.count; ++i) {
-    query += `('${data.classCode}', '${data.semesterCode}', '${data.stdCode}', '${data.job}', '${detail[i].detailId}', '${req.session.username}', '${data.date}')`;
-    if (i + 1 == data.count) query += "";
+    "INSERT INTO `nodelogin`.`violation_records` \
+    (`classCode`, `semesterCode`, `job`, `detailId`, `detailInfo`, `createdBy`, `createdDate`) \
+    VALUES ";
+  for (i = 0; i < detailArr.length; ++i) {
+    query += `('${data.classCode}', 
+        '${data.semesterCode}', 
+        '${data.job}', 
+        '${data.detailId}',
+        '${detailArr[i].detailInfo}',
+        '${req.session.username}',
+        '${data.date}')`;
+    if (i + 1 == detailArr.length) query += "";
     else query += ",";
   }
   console.log(query);
@@ -666,4 +684,33 @@ app.post("/api/add_violation_records", function (req, res) {
   });
   res.statusCode = 200;
   res.end();
+});
+
+// statistic
+app.post("/api/statistic", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+
+  connection.query(
+    "SELECT * FROM nodelogin.violation_records \
+     WHERE violation_records.createdDate BETWEEN ? AND ?;",
+    [data.fromDate, data.toDate],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      console.log(results);
+      res.statusCode = 200;
+      res.send(results);
+    }
+  );
 });

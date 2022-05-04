@@ -35,8 +35,9 @@
                 <script type="text/javascript">
                   document.getElementById("user").innerHTML = sessionStorage.getItem("username");
                 </script>
-                <a href="#" id="home" class="navbar-menu-link">Trang chủ</a>
-                <a href="#" id="setting-menu" class="navbar-menu-link">Cài đặt</a>
+                <a href="/logout">Đăng xuất</a>
+                <!-- <a href="#" id="home" class="navbar-menu-link">Trang chủ</a>
+                <a href="#" id="setting-menu" class="navbar-menu-link">Cài đặt</a> -->
               </nav>
             </div>
           </div>
@@ -55,9 +56,9 @@
     <div id="tab1" data-tab-content="1" class="tab-content">
       <form action="/api/add_user" class="form" id="ine15" method="post">
         <div class="form-group">
-          <label class="label" id="i85xj">Tên đăng nhập:</label>
+          <label class="label" id="i85xj" required>Tên đăng nhập:</label>
           <input placeholder="Nhập tên đăng nhập" class="input" name="username" />
-          <label class="label" id="il004">Mật khẩu:</label>
+          <label class="label" id="il004" required>Mật khẩu:</label>
           <input placeholder="Nhập mật khẩu" class="input" name="password" />
           <button type="submit" class="button" id="addUser">Tạo tài khoản</button>
         </div>
@@ -67,33 +68,33 @@
       <form class="form" id="itc77" action="/api/import_classes" enctype="multipart/form-data" method="post">
         <div class="form-group">
           <label class="label" id="ivio6">Chọn file danh sách lớp để thêm:</label>
-          <input type="file" id="studentList" name="studentList" value="Chọn DS" />
+          <input type="file" id="studentList" name="studentList" value="Chọn DS" required />
           <button type="submit" class="button">Thêm lớp</button>
         </div>
       </form>
     </div>
     <div id="tab3" data-tab-content="1" class="tab-content">
-      <form class="form" id="iepnx" action="/api/assign_job" method="post" onsubmit="return validate_assignment(this);">
-        <div class="form-group">
+      <form class="form" id="iepnx" action="/api/assign_job" method="post">
+        <div class=" form-group">
           <label class="label">Lớp</label>
-          <select class="select" id="drop-classes" name="classCode">
+          <select class="select" id="drop-classes" name="classCode" required>
           </select>
           <label class="label" id="i3hhi">B1 - Tổ chức thi</label>
-          <select class="select" id="drop-assignment-1" name="job1">
+          <select class="select" id="drop-assignment-1" name="job1" required>
           </select>
           <label class="label" id="if4tl">B2 - Làm đề</label>
-          <select class="select" id="drop-assignment-2" name="job2">
+          <select class="select" id="drop-assignment-2" name="job2" required>
           </select>
           <label class="label" id="iygwy">B3 - Coi thi</label>
-          <select class="select" id="drop-assignment-3" name="job3">
+          <select class="select" id="drop-assignment-3" name="job3" required>
           </select>
           <label class="label" id="iz2gmg">B4 - Làm phách gửi bài</label>
-          <select class="select" id="drop-assignment-4" name="job4">
+          <select class="select" id="drop-assignment-4" name="job4" required>
           </select>
           <label class="label" id="i6i3ix">B5 - Chấm thi</label>
-          <select class="select" id="drop-assignment-5" name="job5">
+          <select class="select" id="drop-assignment-5" name="job5" required>
           </select>
-          <label class="label">B6 - Thẩm định luận văn luận án</label>
+          <label class="label">B6 - Thẩm định luận văn luận án</label required>
           <select class="select" id="drop-assignment-6" name="job6">
           </select>
           <button type="submit" class="button" id="assign">Phân công</button>
@@ -101,10 +102,10 @@
       </form>
     </div>
     <div id="tab4" data-tab-content="1" class="tab-content">
-      <form class="form" action="/api/add_violation_detail" method="post" onsubmit="return validate_violation(this);">
+      <form class="form" action="/api/add_violation_detail" method="post">
         <div class="form-group">
           <label class="label" id="iorzgu">Chọn công việc:</label>
-          <select class="select" id="drop-violation" name="job">
+          <select class="select" id="drop-violation" name="job" required>
             <option value="">- Select option -</option>
             <option value="1">B1 - TỔ CHỨC THI</option>
             <option value="2">B2 - LÀM ĐỀ</option>
@@ -117,34 +118,28 @@
           <div class="row" id="existing-violation">
           </div>
           <label class="label" id="ialv75">Thêm nội dung vi phạm:</label>
-          <input placeholder="Nội dung vi phạm" class="input" id="detail" name="detail" />
+          <input placeholder="Nội dung vi phạm" class="input" id="detail" name="detail" required />
           <button type="submit" class="button">Thêm</button>
         </div>
       </form>
     </div>
     <div id="tab5" data-tab-content="1" class="tab-content">
-      <form class="form" id="i1dt05">
+      <form class="form" action="/api/statistic" method="post">
         <div class="form-group">
-          <label class="label" id="i1pr07">Thời gian từ:</label>
-          <input placeholder="Type here your name" class="input" />
-          <label class="label" id="iljkaf">Đến:</label>
-          <input type="email" placeholder="Type here your email" class="input" id="imi20z" />
+          <label class="label" id="">Thời gian từ:</label>
+          <input type="date" id="fromDate" name="fromDate" required />
+          <label class="label" id="">Đến:</label>
+          <input type="date" id="toDate" name="toDate" required />
           <label class="label" id="ihy0nj">Lớp</label>
-          <select class="select" id="inia4l">
-            <option value="">- Select option -</option>
-            <option value="1">Option 1</option>
+          <select class="select" id="drop-report-classes">
           </select>
-          <label class="label" id="iq9km3">Cán bộ phụ trách</label>
-          <select class="select" id="iindyj">
-            <option value="">- Select option -</option>
-            <option value="1">Option 1</option>
+          <label class="label" id="">Cán bộ phụ trách</label>
+          <select class="select" id="drop-report-accounts">
           </select>
-          <label class="label" id="is29nv"> Nội dung vi phạm</label>
-          <select class="select" id="i3w1cb">
-            <option value="">- Select option -</option>
-            <option value="1">Option 1</option>
+          <label class="label" id="">Nội dung vi phạm</label>
+          <select class="select" id="drop-report-violations">
           </select>
-          <button type="submit" class="button">Send</button>
+          <button type="submit" class="button">Thống kê</button>
         </div>
       </form>
     </div>
@@ -250,12 +245,12 @@
     }.bind(items[i]))();
   }
 
-  document.getElementById("home").addEventListener("click",
-    function () {
-      location.replace(location.origin + "/home");
-    },
-    false
-  );
+  // document.getElementById("home").addEventListener("click",
+  //   function () {
+  //     location.replace(location.origin + "/home");
+  //   },
+  //   false
+  // );
 
   function onLoad() {
     // get data from server and fill
@@ -263,14 +258,21 @@
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
+        var formDrop = document.getElementById("drop-classes");
+        var reportDrop = document.getElementById("drop-report-classes");
+        formDrop.innerHTML = reportDrop.innerHTML = "<option value=\"\">- Chọn lớp -</option>";
+
         var classes = JSON.parse(this.responseText);
-        var select = document.getElementById("drop-classes");
-        select.innerHTML = "<option value=\"\">- Chọn lớp -</option>";
         classes.forEach(cls => {
           var option = document.createElement("option");
           option.value = cls.classCode;
           option.text = cls.classCode;
-          select.appendChild(option);
+          formDrop.appendChild(option);
+
+          var option1 = document.createElement("option");
+          option1.value = cls.classCode;
+          option1.text = cls.classCode;
+          reportDrop.appendChild(option1);
         });
       }
     };
@@ -282,14 +284,20 @@
     xmlhttp.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         var accounts = JSON.parse(this.responseText);
+        var reportDrop = document.getElementById("drop-report-accounts");
         for (var job = 1; job <= 6; ++job) {
           var select = document.getElementById("drop-assignment-" + job);
-          select.innerHTML = "<option value=\"\">- Chọn cán bộ -</option>";
+          select.innerHTML = reportDrop.innerHTML = "<option value=\"\">- Chọn cán bộ -</option>";
           accounts.forEach(account => {
             var option = document.createElement("option");
             option.value = account.username;
             option.text = account.username;
             select.appendChild(option);
+
+            var option1 = document.createElement("option");
+            option1.value = account.username;
+            option1.text = account.username;
+            reportDrop.appendChild(option1);
           });
         }
       }
@@ -304,22 +312,6 @@
     console.log(tab);
     if (tab)
       document.getElementById(tab).click();
-  }
-
-  function validate_assignment() {
-    if (document.getElementById("drop-classes").value == "") {
-      alert("Hãy chọn tất cả các ô dữ liệu");
-      return false;
-    }
-    for (var job = 1; job <= 6; ++job) {
-      var select = document.getElementById("drop-assignment-" + job);
-      if (select.value == "") {
-        alert("Hãy chọn tất cả các ô dữ liệu");
-        return false;
-      }
-    }
-
-    return confirm("Xác nhận phân công?");
   }
 
   document.getElementById("drop-violation").addEventListener("change",
