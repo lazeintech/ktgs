@@ -246,6 +246,15 @@ var storage = multer.diskStorage({
     cb(null, file.originalname);
   },
 });
+var storage_att = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, __dirname + "/uploads/attachments/");
+  },
+  filename: (req, file, cb) => {
+    console.log(file.originalname);
+    cb(null, file.originalname);
+  },
+});
 var upload = multer({ storage: storage, fileFilter: excelFilter });
 function isNumeric(value) {
   return /^-?\d+$/.test(value);
@@ -398,6 +407,41 @@ app.post(
   }
 );
 
+// upload_attachment
+app.post(
+  "/api/upload_attachment",
+  upload.single("attFile"),
+  function (req, res, next) {
+    if (!req.session.loggedin) {
+      res.statusCode = 400;
+      res.end("Login first!");
+      return;
+    }
+    const file = req.file;
+    if (!file) {
+      res.statusCode = 400;
+      res.end(`Hãy chọn file`);
+      return next();
+    } else {
+      
+    }
+    res.statusCode = 200;
+    res.end(`
+    <html>
+      <head>
+        <meta charset="utf-8">
+      </head>
+      <body>
+        Dinh kem thành công. <br/>
+        <form action="/setting">
+          <input type="hidden" name="tab" value="tabid2" />
+          <input type="submit" value="OK"/>
+        </form>
+      </body>
+    </html>`);
+  }
+);
+
 // get_classes
 app.post("/api/get_classes", function (req, res) {
   if (!req.session.loggedin) {
@@ -539,6 +583,33 @@ app.post("/api/assign_job", function (req, res) {
     </html>`);
 });
 
+// get_job
+app.post("/api/get_job", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "SELECT * FROM job_assignments \
+      WHERE classCode = ?;",
+    [ data.classCode ],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      console.log(results);
+      res.statusCode = 200;
+      res.send(results);
+    }
+  );
+});
+
 // get_violation_detail
 app.post("/api/get_violation_detail", function (req, res) {
   if (!req.session.loggedin) {
@@ -616,6 +687,7 @@ app.post("/api/get_violation_records", function (req, res) {
     "SELECT \
         violation_detail.detail, \
         violation_records.stdCode, \
+        violation_records.detailInfo, \
         DATE_FORMAT (violation_records.createdDate, '%d/%m/%Y') as createdDate, \
         violation_records.createdBy \
       FROM nodelogin.violation_detail \
@@ -623,10 +695,9 @@ app.post("/api/get_violation_records", function (req, res) {
       ON violation_records.detailid = violation_detail.detailid \
       WHERE ( \
         violation_records.classCode = ? \
-        AND violation_records.semesterCode = ? \
         AND violation_records.job = ? \
         )",
-    [data.classCode, data.semesterCode, data.job],
+    [data.classCode, data.job],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
       if (error) {

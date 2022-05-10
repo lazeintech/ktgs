@@ -231,8 +231,8 @@
       }));
     }
 
-    // document.getElementById("drop-classes").addEventListener("change",
-    //   function () {
+    document.getElementById("drop-classes").addEventListener("change",
+      function () {
     //     // semesters
     //     var xmlhttp = new XMLHttpRequest();
     //     xmlhttp.onreadystatechange = function () {
@@ -251,52 +251,83 @@
     //     xmlhttp.open("POST", location.origin + "/api/get_semesters", true);
     //     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     //     xmlhttp.send(JSON.stringify({ "classCode": document.getElementById("drop-classes").value }));
-    //   },
-    //   false
-    // );
+        // load job assignment
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            var job = JSON.parse(this.responseText);
+            console.log(job);
+            var jobId = `job${document.getElementsByClassName('tab-active')[0].getAttribute('value')}`;
+            if (!job.length ||
+                job[0][jobId] != sessionStorage.getItem("username"))
+            {
+              alert('Bạn không được phân công công việc này!');
+              location.replace('/home');
+            }
+          };
+        };
+        xmlhttp.open("POST", location.origin + "/api/get_job", true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({
+          "classCode": document.getElementById("drop-classes").value
+        }));
+      },
+      false
+    );
 
-    // document.getElementById("drop-semesters").addEventListener("change",
-    //   function () {
-    //     // violations
-    //     var xmlhttp = new XMLHttpRequest();
-    //     xmlhttp.onreadystatechange = function () {
-    //       if (this.readyState == 4 && this.status == 200) {
-    //         var table = document.getElementById("tbl-violations");
-    //         for (var i = 1; i < table.rows.length;) {
-    //           table.deleteRow(i);
-    //         }
+    document.getElementById("drop-violation").addEventListener("change",
+      function () {
+        // violations
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            var table = document.getElementById("tbl-violations");
+            for (var i = 1; i < table.rows.length;) {
+              table.deleteRow(i);
+            }
 
-    //         var vRecords = JSON.parse(this.responseText);
-    //         vRecords.forEach(record => {
-    //           var totalRowCount = table.rows.length;
-    //           var row = table.insertRow(totalRowCount);
-    //           cellCnt = 0;
-    //           var number = row.insertCell(cellCnt++);
-    //           number.innerHTML = totalRowCount;
-    //           var date = row.insertCell(cellCnt++);
-    //           date.innerHTML = record.createdDate;
-    //           var stdCode = row.insertCell(cellCnt++);
-    //           stdCode.innerHTML = record.stdCode;
-    //           var violation = row.insertCell(cellCnt++);
-    //           violation.innerHTML = record.detail;
-    //           var upload = row.insertCell(cellCnt++);
-    //           upload.innerHTML = "";
-    //           var download = row.insertCell(cellCnt++);
-    //           download.innerHTML =
-    //             ' <a href="/img/download.png" download>\
-    //                 <img src="/img/download.png" width="24" height = "24" >\
-    //                 </img> \
-    //               </a > ';
-    //         });
-    //       }
-    //     };
-    //     xmlhttp.open("POST", location.origin + "/api/get_violation_records", true);
-    //     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    //     xmlhttp.send(JSON.stringify({
-    //       "classCode": document.getElementById("drop-classes").value,
-    //       "semesterCode": document.getElementById("drop-semesters").value,
-    //       "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
-    //     }));
+            var vRecords = JSON.parse(this.responseText);
+            vRecords.forEach(record => {
+              var table = document.getElementById("tbl-violations");
+              var totalRowCount = table.rows.length;
+              var row = table.insertRow(totalRowCount);
+              cellCnt = 0;
+
+              var number = row.insertCell(cellCnt++);
+              number.innerHTML = totalRowCount;
+
+              var date = row.insertCell(cellCnt++);
+              date.innerHTML = record.createdDate;
+
+              // var stdCode = row.insertCell(cellCnt++);
+              // stdCode.innerHTML = document.getElementById("drop-students").value;
+
+              var violation = row.insertCell(cellCnt++);
+              violation.innerHTML = record.detailInfo;
+
+              var upload = row.insertCell(cellCnt++);
+              upload.innerHTML =
+                ' <a upload>\
+                    <img src="/img/upload.png" width="24" height = "24" >\
+                    </img> \
+                  </a > ';
+
+              var download = row.insertCell(cellCnt++);
+              download.innerHTML =
+                ' <a download>\
+                    <img src="/img/download.png" width="24" height = "24" >\
+                    </img> \
+                  </a > ';
+            });
+          }
+        };
+        xmlhttp.open("POST", location.origin + "/api/get_violation_records", true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({
+          "classCode": document.getElementById("drop-classes").value,
+          "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
+      }));
+    });
 
     // students
     // var xmlhttp = new XMLHttpRequest();
@@ -359,7 +390,7 @@
 
         var download = row.insertCell(cellCnt++);
         download.innerHTML =
-          ' <a href="/img/download.png" download>\
+          ' <a download>\
               <img src="/img/download.png" width="24" height = "24" >\
               </img> \
             </a > ';
