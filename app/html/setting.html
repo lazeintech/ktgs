@@ -36,8 +36,7 @@
                   document.getElementById("user").innerHTML = sessionStorage.getItem("username");
                 </script>
                 <a href="/logout">Đăng xuất</a>
-                <!-- <a href="#" id="home" class="navbar-menu-link">Trang chủ</a>
-                <a href="#" id="setting-menu" class="navbar-menu-link">Cài đặt</a> -->
+                <a href="#" id="menu" class="navbar-menu-link">Menu chính</a>
               </nav>
             </div>
           </div>
@@ -50,12 +49,20 @@
       <a href="#tab1" data-tab="1" class="tab" id="tabid1">Tạo tài khoản</a>
       <a href="#tab2" data-tab="1" class="tab" id="tabid2">Thêm lớp</a>
       <a href="#tab3" data-tab="1" class="tab" id="tabid3">Phân công lớp</a>
-      <a href="#tab4" data-tab="1" class="tab" id="tabid4">Tuỳ chỉnh nội dung vi phạm</a>
+      <a href="#tab4" data-tab="1" class="tab" id="tabid4">Tuỳ chỉnh Danh mục vi phạm</a>
       <a href="#tab5" data-tab="1" class="tab" id="tabid5">Thống kê</a>
     </nav>
     <div id="tab1" data-tab-content="1" class="tab-content">
       <form action="/api/add_user" class="form" id="ine15" method="post">
         <div class="form-group">
+          <div>
+            <table id="tbl-acc-list" style="width:50%" align="center">
+              <tr>
+                <th>Tài khoản đã tạo</th>
+                <th>Mật khẩu </th>
+              </tr>
+            </table>
+          </div>
           <label class="label" id="i85xj" required>Tên đăng nhập:</label>
           <input placeholder="Nhập tên đăng nhập" class="input" name="username" />
           <label class="label" id="il004" required>Mật khẩu:</label>
@@ -79,24 +86,13 @@
           <label class="label">Lớp</label>
           <select class="select" id="drop-classes" name="classCode" required>
           </select>
-          <label class="label" id="i3hhi">B1 - Tổ chức thi</label>
-          <select class="select" id="drop-assignment-1" name="job1" required>
+          <label class="label" id="i3hhi">Cán bộ</label>
+          <select class="select" id="drop-assignment" name="username" required>
           </select>
-          <label class="label" id="if4tl">B2 - Làm đề</label>
-          <select class="select" id="drop-assignment-2" name="job2" required>
-          </select>
-          <label class="label" id="iygwy">B3 - Coi thi</label>
-          <select class="select" id="drop-assignment-3" name="job3" required>
-          </select>
-          <label class="label" id="iz2gmg">B4 - Làm phách gửi bài</label>
-          <select class="select" id="drop-assignment-4" name="job4" required>
-          </select>
-          <label class="label" id="i6i3ix">B5 - Chấm thi</label>
-          <select class="select" id="drop-assignment-5" name="job5" required>
-          </select>
-          <label class="label">B6 - Thẩm định luận văn luận án</label required>
-          <select class="select" id="drop-assignment-6" name="job6">
-          </select>
+          <label class="label" id="">Thời gian từ ngày:</label>
+          <input type="date" id="assignFrom" name="assignFrom" required />
+          <label class="label" id="">Đến ngày:</label>
+          <input type="date" id="assignTo" name="assignTo" required />
           <button type="submit" class="button" id="assign">Phân công</button>
         </div>
       </form>
@@ -114,11 +110,11 @@
             <option value="5">B5 - CHẤM THI</option>
             <option value="6">B6 - THẨM ĐỊNH LUẬN VĂN LUẬN ÁN</option>
           </select>
-          Nội dung vi phạm đã có:
+          Danh mục vi phạm đã có:
           <div class="row" id="existing-violation">
           </div>
-          <label class="label" id="ialv75">Thêm nội dung vi phạm:</label>
-          <input placeholder="Nội dung vi phạm" class="input" id="detail" name="detail" required />
+          <label class="label" id="ialv75">Thêm Danh mục vi phạm:</label>
+          <input placeholder="Danh mục vi phạm" class="input" id="detail" name="detail" required />
           <button type="submit" class="button">Thêm</button>
         </div>
       </form>
@@ -136,7 +132,7 @@
           <label class="label" id="">Cán bộ phụ trách</label>
           <select class="select" id="drop-report-accounts">
           </select>
-          <label class="label" id="">Nội dung vi phạm</label>
+          <label class="label" id="">Danh mục vi phạm</label>
           <select class="select" id="drop-report-violations">
           </select>
           <button type="submit" class="button">Thống kê</button>
@@ -245,12 +241,12 @@
     }.bind(items[i]))();
   }
 
-  // document.getElementById("home").addEventListener("click",
-  //   function () {
-  //     location.replace(location.origin + "/home");
-  //   },
-  //   false
-  // );
+  document.getElementById("menu").addEventListener("click",
+    function () {
+      location.replace(location.origin + "/menu");
+    },
+    false
+  );
 
   function onLoad() {
     // get data from server and fill
@@ -261,7 +257,6 @@
         var formDrop = document.getElementById("drop-classes");
         var reportDrop = document.getElementById("drop-report-classes");
         formDrop.innerHTML = reportDrop.innerHTML = "<option value=\"\">- Chọn lớp -</option>";
-
         var classes = JSON.parse(this.responseText);
         classes.forEach(cls => {
           var option = document.createElement("option");
@@ -284,22 +279,29 @@
     xmlhttp.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         var accounts = JSON.parse(this.responseText);
-        var reportDrop = document.getElementById("drop-report-accounts");
-        for (var job = 1; job <= 6; ++job) {
-          var select = document.getElementById("drop-assignment-" + job);
-          select.innerHTML = reportDrop.innerHTML = "<option value=\"\">- Chọn cán bộ -</option>";
-          accounts.forEach(account => {
-            var option = document.createElement("option");
-            option.value = account.username;
-            option.text = account.username;
-            select.appendChild(option);
+        var accList = document.getElementById("tbl-acc-list");
+        accounts.forEach(account => {
+          var row = accList.insertRow(accList.rows.length);
+          cell1 = row.insertCell(0);
+          cell1.innerHTML = account.username;
+          cell2 = row.insertCell(1);
+          cell2.innerHTML = account.password;
+        });
 
-            var option1 = document.createElement("option");
-            option1.value = account.username;
-            option1.text = account.username;
-            reportDrop.appendChild(option1);
-          });
-        }
+        var reportDrop = document.getElementById("drop-report-accounts");
+        var assignDrop = document.getElementById("drop-assignment");
+        assignDrop.innerHTML = reportDrop.innerHTML = "<option value=\"\">- Chọn cán bộ -</option>";
+        accounts.forEach(account => {
+          var option = document.createElement("option");
+          option.value = account.username;
+          option.text = account.username;
+          assignDrop.appendChild(option);
+
+          var option1 = document.createElement("option");
+          option1.value = account.username;
+          option1.text = account.username;
+          reportDrop.appendChild(option1);
+        });
       }
     };
     xmlhttp.open("POST", location.origin + "/api/get_accounts", true);
@@ -340,6 +342,6 @@
       return false;
     }
 
-    return confirm("Xác nhận nội dung vi phạm?");
+    return confirm("Xác nhận Danh mục vi phạm?");
   }
 </script>

@@ -31,28 +31,18 @@
                   document.getElementById("user").innerHTML = sessionStorage.getItem("username");
                 </script>
                 <a href="/logout">Đăng xuất</a>
-                <!-- <a href="#" class="navbar-menu-link" id="home">Trang chủ</a>
-                <a href="#" class="navbar-menu-link" id="setting-menu">Cài đặt</a> -->
+                <a href="#" id="menu" class="navbar-menu-link">Menu chính</a>
               </nav>
             </div>
           </div>
         </div>
         <nav data-tab-container="1" class="tab-container" id="tab-container-id">
           <a href="#tab1" data-tab="1" value="1" class="tab" id="tabid1" onclick="loadTab()">
-            TỔ CHỨC THI<br />(I)<br /></a>
-          <a href="#tab2" data-tab="1" value="2" class="tab" id="tabid2" onclick="loadTab()">
-            LÀM ĐỀ<br />(II)<br /></a>
-          <a href="#tab3" data-tab="1" value="3" class="tab" id="tabid3" onclick="loadTab()">
-            COI THI<br />(III)<br /></a>
-          <a href="#tab4" data-tab="1" value="4" class="tab" id="tabid4" onclick="loadTab()">
-            LÀM PHÁCH - GỬI BÀI<br />(IV)<br /></a>
-          <a href="#tab5" data-tab="1" value="5" class="tab" id="tabid5" onclick="loadTab()">
-            CHẤM THI<br />(V)<br /></a>
-          <a href="#tab6" data-tab="1" value="6" class="tab" id="tabid6" onclick="loadTab()">
-            THẨM ĐỊNH LUẬN VĂN, LUẬN ÁN<br />(VI)<br /></a>
+            THỰC HÀNH VẤN ĐÁP<br />(VII)<br /></a>
         </nav>
       </div>
     </div>
+
     <form class="form" id="violation-form" onsubmit="addViolations(event)">
       <div class="form-group">
         <label class="label">Lớp phụ trách:</label>
@@ -164,12 +154,12 @@
       }.bind(items[i]))();
     }
 
-    // document.getElementById("setting-menu").addEventListener("click",
-    //   function () {
-    //     location.replace(location.origin + "/setting");
-    //   },
-    //   false
-    // );
+    document.getElementById("menu").addEventListener("click",
+      function () {
+        location.replace(location.origin + "/menu");
+      },
+      false
+    );
 
     function onLoad() {
       loadTab();
@@ -233,24 +223,24 @@
 
     document.getElementById("drop-classes").addEventListener("change",
       function () {
-    //     // semesters
-    //     var xmlhttp = new XMLHttpRequest();
-    //     xmlhttp.onreadystatechange = function () {
-    //       if (this.readyState == 4 && this.status == 200) {
-    //         var semesters = JSON.parse(this.responseText);
-    //         var select = document.getElementById("drop-semesters");
-    //         select.innerHTML = "<option value=\"\">- Chọn học phần -</option>";
-    //         semesters.forEach(sem => {
-    //           var option = document.createElement("option");
-    //           option.value = sem.semesterCode;
-    //           option.text = sem.semesterCode;
-    //           select.appendChild(option);
-    //         });
-    //       }
-    //     };
-    //     xmlhttp.open("POST", location.origin + "/api/get_semesters", true);
-    //     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    //     xmlhttp.send(JSON.stringify({ "classCode": document.getElementById("drop-classes").value }));
+        //     // semesters
+        //     var xmlhttp = new XMLHttpRequest();
+        //     xmlhttp.onreadystatechange = function () {
+        //       if (this.readyState == 4 && this.status == 200) {
+        //         var semesters = JSON.parse(this.responseText);
+        //         var select = document.getElementById("drop-semesters");
+        //         select.innerHTML = "<option value=\"\">- Chọn học phần -</option>";
+        //         semesters.forEach(sem => {
+        //           var option = document.createElement("option");
+        //           option.value = sem.semesterCode;
+        //           option.text = sem.semesterCode;
+        //           select.appendChild(option);
+        //         });
+        //       }
+        //     };
+        //     xmlhttp.open("POST", location.origin + "/api/get_semesters", true);
+        //     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        //     xmlhttp.send(JSON.stringify({ "classCode": document.getElementById("drop-classes").value }));
         // load job assignment
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
@@ -259,10 +249,9 @@
             console.log(job);
             var jobId = `job${document.getElementsByClassName('tab-active')[0].getAttribute('value')}`;
             if (!job.length ||
-                job[0][jobId] != sessionStorage.getItem("username"))
-            {
+              job[0][jobId] != sessionStorage.getItem("username")) {
               alert('Bạn không được phân công công việc này!');
-              location.replace('/home');
+              location.replace('/menu');
             }
           };
         };
@@ -326,8 +315,8 @@
         xmlhttp.send(JSON.stringify({
           "classCode": document.getElementById("drop-classes").value,
           "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
-      }));
-    });
+        }));
+      });
 
     // students
     // var xmlhttp = new XMLHttpRequest();

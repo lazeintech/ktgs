@@ -77,9 +77,8 @@ app.post("/auth", function (req, res) {
           // Authenticate the user
           req.session.loggedin = true;
           req.session.username = username;
-          // Redirect to home/setting page
-          if (username == "admin") res.redirect("/setting");
-          else res.redirect("/home");
+          // Redirect to menu/setting page
+          res.redirect("/menu");
         } else {
           res.send("Tên đăng nhập hoặc Mật khẩu không đúng!");
           res.end();
@@ -92,12 +91,10 @@ app.post("/auth", function (req, res) {
   }
 });
 
-app.get("/home", function (req, res) {
+app.get("/menu", function (req, res) {
   // If the user is loggedin
   if (req.session.loggedin) {
-    // Output username
-    // res.send("Welcome back, " + req.session.username + "!");
-    res.sendFile(path.join(__dirname + "/html/home.html"));
+    res.sendFile(path.join(__dirname + "/html/menu.html"));
   } else {
     // Not logged in
     res.statusCode = 400;
@@ -115,6 +112,49 @@ app.get("/home", function (req, res) {
     </html>`);
   }
   // res.end();
+});
+
+app.get("/ktgs-thi", function (req, res) {
+  // If the user is loggedin
+  if (req.session.loggedin) {
+    res.sendFile(path.join(__dirname + "/html/ktgs-thi.html"));
+  } else {
+    // Not logged in
+    res.statusCode = 400;
+    res.end(`
+    <html>
+      <head>
+        <meta charset="utf-8">
+      </head>
+        <body>
+        Bạn chưa đăng nhập. <br/>
+        <form action="/">
+            <input type="submit" value="OK" />
+        </form>
+      </body>
+    </html>`);
+  }
+});
+app.get("/ktgs-thvd", function (req, res) {
+  // If the user is loggedin
+  if (req.session.loggedin) {
+    res.sendFile(path.join(__dirname + "/html/ktgs-thvd.html"));
+  } else {
+    // Not logged in
+    res.statusCode = 400;
+    res.end(`
+    <html>
+      <head>
+        <meta charset="utf-8">
+      </head>
+        <body>
+        Bạn chưa đăng nhập. <br/>
+        <form action="/">
+            <input type="submit" value="OK" />
+        </form>
+      </body>
+    </html>`);
+  }
 });
 
 app.get("/setting", function (req, res) {
@@ -423,7 +463,6 @@ app.post(
       res.end(`Hãy chọn file`);
       return next();
     } else {
-      
     }
     res.statusCode = 200;
     res.end(`
@@ -546,17 +585,8 @@ app.post("/api/assign_job", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "INSERT INTO `nodelogin`.`job_assignments` (`classCode`, `job1`, `job2`, `job3`, `job4`, `job5`, `job6`) VALUES(?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE job6 = ?",
-    [
-      data.classCode,
-      data.job1,
-      data.job2,
-      data.job3,
-      data.job4,
-      data.job5,
-      data.job6,
-      data.job6,
-    ],
+    "INSERT INTO job_assignments (`classCode`, `username`, `assignFrom`, `assignTo`) VALUES(?, ?, ?, ?)",
+    [data.classCode, data.username, data.assignFrom, data.assignTo],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
       if (error) {
@@ -593,9 +623,11 @@ app.post("/api/get_job", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "SELECT * FROM job_assignments \
-      WHERE classCode = ?;",
-    [ data.classCode ],
+    "SELECT classCode, username, \
+        DATE_FORMAT(assignFrom, '%Y-%m-%d') as assignFrom, \
+        DATE_FORMAT(assignTo, '%Y-%m-%d') as assignTo \
+     FROM job_assignments WHERE classCode = ? AND username = ?",
+    [data.classCode, data.username],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
       if (error) {

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Cài đặt admin - Phần mềm kiểm tra giám sát</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body id="icna">
+  <div data-gjs="navbar" class="navbar">
+    <div class="navbar-container" id="i2em1r">
+      <a href="/" class="navbar-brand"></a>
+      <div id="bar-burger" class="navbar-burger">
+        <div class="navbar-burger-line"></div>
+        <div class="navbar-burger-line"></div>
+        <div class="navbar-burger-line"></div>
+      </div>
+      <div data-gjs="navbar-items" class="navbar-items-c">
+        <nav data-gjs="navbar-menu" class="navbar-menu">
+          <a>Xin chào, <b id="user"></b></a>
+          <script type="text/javascript">
+            document.getElementById("user").innerHTML = sessionStorage.getItem("username");
+          </script>
+          <a href="/logout">Đăng xuất</a>
+          <a href="#" id="menu" class="navbar-menu-link">Menu chính</a>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <div id="idsz">Lựa chọn chức năng:
+  </div>
+  <div class="cell">
+    <div class="form">
+      <button class="button" id="btn-ktgs-thi">Kiểm tra giám sát thi</button>
+      <button class="button" id="btn-ktgs-thvd">Kiểm tra giám sát thực hành vấn đáp</button>
+      <button class="button" id="btn-setting">Cài đặt admin</button>
+    </div>
+  </div>
+</body>
+
+<script>
+  document.getElementById("btn-ktgs-thi").addEventListener("click",
+    function () {
+      console.log(location.origin + "/ktgs-thi");
+      location.replace(location.origin + "/ktgs-thi");
+    },
+    false
+  );
+  document.getElementById("btn-ktgs-thvd").addEventListener("click",
+    function () {
+      location.replace(location.origin + "/ktgs-thvd");
+    },
+    false
+  );
+  document.getElementById("btn-setting").addEventListener("click",
+    function () {
+      if (sessionStorage.getItem("username") != "admin")
+        alert("Chỉ Admin mới chọn được chức năng này");
+      else
+        location.replace(location.origin + "/setting");
+    },
+    false
+  );
+</script>

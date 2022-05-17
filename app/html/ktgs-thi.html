@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Phần mềm kiểm tra giám sát</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <body id="i5qg" onload="onLoad()">
+    <div id="i967">
+      <div id="ieh4" class="container-width">
+        <div class="logo-container"></div>
+        <div class="clearfix"></div>
+      </div>
+      <div data-tabs="1" id="i1r88">
+        <div data-gjs="navbar" class="navbar">
+          <div class="navbar-container" id="i2em1r">
+            <a href="/" class="navbar-brand"></a>
+            <div id="bar-burger" class="navbar-burger">
+              <div class="navbar-burger-line"></div>
+              <div class="navbar-burger-line"></div>
+              <div class="navbar-burger-line"></div>
+            </div>
+            <div data-gjs="navbar-items" class="navbar-items-c">
+              <nav data-gjs="navbar-menu" class="navbar-menu">
+                <a>Xin chào, <b id="user"></b></a>
+                <script type="text/javascript">
+                  document.getElementById("user").innerHTML = sessionStorage.getItem("username");
+                </script>
+                <a href="/logout">Đăng xuất</a>
+                <a href="#" id="menu" class="navbar-menu-link">Menu chính</a>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <nav data-tab-container="1" class="tab-container" id="tab-container-id">
+          <a href="#tab1" data-tab="1" value="1" class="tab" id="tabid1" onclick="loadTab()">
+            TỔ CHỨC THI<br />(I)<br /></a>
+          <a href="#tab2" data-tab="1" value="2" class="tab" id="tabid2" onclick="loadTab()">
+            LÀM ĐỀ<br />(II)<br /></a>
+          <a href="#tab3" data-tab="1" value="3" class="tab" id="tabid3" onclick="loadTab()">
+            COI THI<br />(III)<br /></a>
+          <a href="#tab4" data-tab="1" value="4" class="tab" id="tabid4" onclick="loadTab()">
+            LÀM PHÁCH - GỬI BÀI<br />(IV)<br /></a>
+          <a href="#tab5" data-tab="1" value="5" class="tab" id="tabid5" onclick="loadTab()">
+            CHẤM THI<br />(V)<br /></a>
+          <a href="#tab6" data-tab="1" value="6" class="tab" id="tabid6" onclick="loadTab()">
+            THẨM ĐỊNH LUẬN VĂN, LUẬN ÁN<br />(VI)<br /></a>
+        </nav>
+      </div>
+    </div>
+    <form class="form" id="violation-form" onsubmit="addViolations(event)">
+      <div class="form-group">
+        <label class="label">Lớp phụ trách:</label>
+        <select class="select" id="drop-classes" name="classCode" required> </select>
+        <label class="label">Học phần:</label>
+        <input class="input" type="text" id="text-semester" name="semesterCode" required /> </input>
+        <label class="label">Danh mục vi phạm:</label>
+        <select class="select" type="text" id="drop-violation" name="violation" required /> </select>
+        <!-- <select class="select" id="drop-semesters" name="semesterCode" required> </select>
+        <label class="label">Học viên:</label>
+        <select class="select" id="drop-students" name="stdCode" required> </select> -->
+        <label class="label">Ngày tháng:</label>
+        <input type="date" id="input-date" name="date" required /><br /><br />
+        <label class="label">Nội dung vi phạm:</label>
+        <div id="i5aeml">
+          <table id="tbl-violations" style="width:100%">
+            <tbody>
+              <tr>
+                <td style="width:2%">STT</td>
+                <td style="width:10%">Ngày</td>
+                <!-- <td style="width:10%">Mã HV</td> -->
+                <td style="width:35%">Nội dung</td>
+                <td style="width:35%">Biện pháp xử lí</td>
+                <!-- <td style="width:4%"></td>
+                <td style="width:4%"></td> -->
+              </tr>
+            </tbody>
+          </table><br />
+          <button type="button" id="addViolationRecord">+</button>
+          <button type="submit" class="button" id="saveViolationRecord">Lưu vi phạm</button>
+        </div>
+      </div>
+    </form>
+  </body>
+  <script>
+    var items = document.querySelectorAll('#i1r88');
+    for (var i = 0, len = items.length; i < len; i++) {
+      (function () {
+        var t, e = this,
+          a = "[data-tab]",
+          n = document.body,
+          r = n.matchesSelector || n.webkitMatchesSelector || n.mozMatchesSelector || n.msMatchesSelector,
+          o = function () {
+            var a = e.querySelectorAll("[data-tab-content]") || [];
+            for (t = 0; t < a.length; t++) a[t].style.display = "none"
+          },
+          i = function (n) {
+            var r = e.querySelectorAll(a) || [];
+            for (t = 0; t < r.length; t++) {
+              var i = r[t],
+                s = i.className.replace("tab-active", "").trim();
+              i.className = s
+            }
+            o(), n.className += " tab-active";
+            var l = n.getAttribute("href"),
+              c = e.querySelector(l);
+            c && (c.style.display = "")
+          },
+          s = e.querySelector(".tab-active" + a);
+        s = s || e.querySelector(a), s && i(s), e.addEventListener("click", function (t) {
+          var e = t.target;
+          r.call(e, a) && i(e)
+        })
+      }.bind(items[i]))();
+    }
+    var items = document.querySelectorAll('#bar-burger');
+    for (var i = 0, len = items.length; i < len; i++) {
+      (function () {
+        var e, t = 0,
+          n = function () {
+            var e, t = document.createElement("void"),
+              n = {
+                transition: "transitionend",
+                OTransition: "oTransitionEnd",
+                MozTransition: "transitionend",
+                WebkitTransition: "webkitTransitionEnd"
+              };
+            for (e in n)
+              if (void 0 !== t.style[e]) return n[e]
+          }(),
+          r = function (e) {
+            var t = window.getComputedStyle(e),
+              n = t.display,
+              r = (t.position, t.visibility, t.height, parseInt(t["max-height"]));
+            if ("none" !== n && "0" !== r) return e.offsetHeight;
+            e.style.height = "auto", e.style.display = "block", e.style.position = "absolute", e.style.visibility = "hidden";
+            var i = e.offsetHeight;
+            return e.style.height = "", e.style.display = "", e.style.position = "", e.style.visibility = "", i
+          },
+          i = function (e) {
+            t = 1;
+            var n = r(e),
+              i = e.style;
+            i.display = "block", i.transition = "max-height 0.25s ease-in-out", i.overflowY = "hidden", "" == i["max-height"] && (i["max-height"] = 0), 0 == parseInt(i["max-height"]) ? (i["max-height"] = "0", setTimeout(function () {
+              i["max-height"] = n + "px"
+            }, 10)) : i["max-height"] = "0"
+          },
+          a = function (r) {
+            if (r.preventDefault(), !t) {
+              var a = this.closest("[data-gjs=navbar]"),
+                o = a.querySelector("[data-gjs=navbar-items]");
+              i(o), e || (o.addEventListener(n, function () {
+                t = 0;
+                var e = o.style;
+                0 == parseInt(e["max-height"]) && (e.display = "", e["max-height"] = "")
+              }), e = 1)
+            }
+          };
+        "gjs-collapse" in this || this.addEventListener("click", a), this["gjs-collapse"] = 1
+      }.bind(items[i]))();
+    }
+
+    document.getElementById("menu").addEventListener("click",
+      function () {
+        location.replace(location.origin + "/menu");
+      },
+      false
+    );
+
+    function onLoad() {
+      loadTab();
+
+      // goto tab
+      var url_string = location.href;
+      var url = new URL(url_string);
+      var tab = url.searchParams.get("tab");
+      if (tab)
+        document.getElementById(tab).click();
+    }
+
+    let newViolationCount = 0;
+    function loadTab() {
+      newViolationCount = 0;
+      document.getElementById("text-semester").innerHTML = '';
+      document.getElementById("input-date").value = '';
+      var table = document.getElementById("tbl-violations");
+      for (var i = 1; i < table.rows.length;) {
+        table.deleteRow(i);
+      }
+      // classes 
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var classes = JSON.parse(this.responseText);
+          var select = document.getElementById("drop-classes");
+          select.innerHTML = "<option value=\"\">- Chọn lớp -</option>";
+          classes.forEach(cls => {
+            var option = document.createElement("option");
+            option.value = cls.classCode;
+            option.text = cls.classCode;
+            select.appendChild(option);
+          });
+        }
+      };
+      xmlhttp.open("POST", location.origin + "/api/get_classes", true);
+      xmlhttp.send();
+
+      // load data into dropdown violation
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var violations = JSON.parse(this.responseText);
+          select = document.getElementById("drop-violation");
+          select.innerHTML = "<option value=\"\">- Chọn nội dung -</option>";
+          violations.forEach(violation => {
+            var option = document.createElement("option");
+            option.value = violation.detailId;
+            option.text = violation.detail;
+            select.appendChild(option);
+          });
+        };
+      };
+      xmlhttp.open("POST", location.origin + "/api/get_violation_detail", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify({
+        "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
+      }));
+    }
+
+    document.getElementById("drop-classes").addEventListener("change",
+      function () {
+        // load job assignment
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            var job = JSON.parse(this.responseText);
+            console.log(job);
+            if (job.length == 0) {
+              alert('Bạn không được phân công phụ trách lớp này!');
+              location.replace('/ktgs-thi');
+            }
+          };
+        };
+        xmlhttp.open("POST", location.origin + "/api/get_job", true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({
+          "classCode": document.getElementById("drop-classes").value,
+          "username": sessionStorage.getItem("username")
+        }));
+      },
+      false
+    );
+
+    document.getElementById("drop-violation").addEventListener("change",
+      function () {
+        // violations
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            var table = document.getElementById("tbl-violations");
+            for (var i = 1; i < table.rows.length;) {
+              table.deleteRow(i);
+            }
+
+            var vRecords = JSON.parse(this.responseText);
+            vRecords.forEach(record => {
+              var table = document.getElementById("tbl-violations");
+              var totalRowCount = table.rows.length;
+              var row = table.insertRow(totalRowCount);
+              cellCnt = 0;
+
+              var number = row.insertCell(cellCnt++);
+              number.innerHTML = totalRowCount;
+
+              var date = row.insertCell(cellCnt++);
+              date.innerHTML = record.createdDate;
+
+              // var stdCode = row.insertCell(cellCnt++);
+              // stdCode.innerHTML = document.getElementById("drop-students").value;
+
+              var violation = row.insertCell(cellCnt++);
+              violation.innerHTML = record.detailInfo;
+
+              // var upload = row.insertCell(cellCnt++);
+              // upload.innerHTML =
+              //   ' <a upload>\
+              //       <img src="/img/upload.png" width="24" height = "24" >\
+              //       </img> \
+              //     </a > ';
+
+              // var download = row.insertCell(cellCnt++);
+              // download.innerHTML =
+              //   ' <a download>\
+              //       <img src="/img/download.png" width="24" height = "24" >\
+              //       </img> \
+              //     </a > ';
+            });
+          }
+        };
+        xmlhttp.open("POST", location.origin + "/api/get_violation_records", true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({
+          "classCode": document.getElementById("drop-classes").value,
+          "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
+        }));
+      });
+
+    document.getElementById("input-date").addEventListener("change",
+      function () {
+        // validate assignment
+        let valid = false;
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            var job = JSON.parse(this.responseText);
+            console.log(job);
+
+            let valid = false;
+            if (sessionStorage.getItem("username") != "admin") {
+              job.forEach(j => {
+                console.log(j)
+                let date = document.getElementById("input-date").value;
+                if (date >= j["assignFrom"] && date <= j["assignTo"]) {
+                  valid = true;
+                }
+                if (!valid) {
+                  alert("Không được phân công ngày đã chọn. Vui lòng chọn ngày đã được phân công.");
+                  document.getElementById("input-date").value = "";
+                  return;
+                }
+              });
+            }
+          };
+        };
+        xmlhttp.open("POST", location.origin + "/api/get_job", true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify({
+          "classCode": document.getElementById("drop-classes").value,
+          "username": sessionStorage.getItem("username")
+        }));
+      },
+      false
+    );
+
+    document.getElementById("addViolationRecord").addEventListener("click",
+      function () {
+        if (
+          !document.getElementById("drop-classes").value ||
+          !document.getElementById("text-semester").value ||
+          !document.getElementById("drop-violation").value ||
+          !document.getElementById("input-date").value
+        ) {
+          alert("Hãy chọn lớp, học phần, nội dung vi phạm và ngày tháng!");
+          return;
+        }
+
+        var table = document.getElementById("tbl-violations");
+        var totalRowCount = table.rows.length;
+        var row = table.insertRow(totalRowCount);
+        cellCnt = 0;
+
+        var number = row.insertCell(cellCnt++);
+        number.innerHTML = totalRowCount;
+
+        var date = row.insertCell(cellCnt++);
+        tmps = document.getElementById("input-date").value.split("-");
+        date.innerHTML = tmps[2] + '/' + tmps[1] + '/' + tmps[0];
+
+        // var stdCode = row.insertCell(cellCnt++);
+        // stdCode.innerHTML = document.getElementById("drop-students").value;
+
+        var violation = row.insertCell(cellCnt++);
+        violation.innerHTML =
+          `<input class="input-cell" id="violation-info-${newViolationCount++}"> </input>`;
+
+        var prevention = row.insertCell(cellCnt++);
+        prevention.innerHTML =
+          `<input class="input-cell" id="prevention-info-${newViolationCount++}"> </input>`;
+
+        // var upload = row.insertCell(cellCnt++);
+        // upload.innerHTML =
+        //   ' <a upload>\
+        //       <img src="/img/upload.png" width="24" height = "24" >\
+        //       </img> \
+        //     </a > ';
+
+        // var download = row.insertCell(cellCnt++);
+        // download.innerHTML =
+        //   ' <a download>\
+        //       <img src="/img/download.png" width="24" height = "24" >\
+        //       </img> \
+        //     </a > ';
+      },
+      false
+    );
+
+    function addViolations(event) {
+      // Prevent the form from submitting.
+      event.preventDefault();
+
+      const formData = new FormData(event.target);
+      // Build the data object.
+      formData.append('job', document.getElementsByClassName('tab-active')[0].getAttribute('value'));
+      formData.append('detailId', parseInt(document.getElementById("drop-violation").value));
+      var detailArr = [];
+      console.log("newViolationCount " + newViolationCount)
+      for (i = 0; i < newViolationCount; ++i) {
+        detailArr.push({
+          'detailInfo': document.getElementById(`violation-info-${i}`).value
+        })
+      }
+      console.log(detailArr);
+      formData.append('detailArr', JSON.stringify(detailArr));
+
+      const data = {};
+      formData.forEach((value, key) => (data[key] = value));
+      console.log(data);
+
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        console.log(this);
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            alert("Thêm vi phạm thành công");
+            loadTab();
+          }
+          else {
+            alert("Có lỗi khi thêm vi phạm: " + this.responseText);
+          }
+        }
+      };
+      xmlhttp.open("POST", location.origin + "/api/add_violation_records", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify(data));
+    }
+  </script>
+</body>
+<html>
