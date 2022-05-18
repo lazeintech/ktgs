@@ -8,6 +8,18 @@ const XLSX = require("xlsx");
 const multer = require("multer");
 
 const port = process.env.PORT || 8888;
+const dbhost = process.env.dbhost || 'localhost';
+const dbuser = process.env.dbuser || 'root';
+const dbpassword = process.env.dbpassword || '12345678';
+const dbname = process.env.dbname || 'nodelogin';
+
+const connection = mysql.createConnection({
+  host: dbhost,
+  user: dbuser,
+  password: dbpassword,
+  database: dbname,
+});
+
 var app = express();
 app.use(
   cors({
@@ -43,13 +55,6 @@ app.listen(port);
 
 // CONFIGURATIONs
 console.log("Server started at http://localhost:" + port);
-
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "12345678",
-  database: "nodelogin",
-});
 
 ///////////////////////////////////////////////////////////////////////////////
 // SERVINGs
@@ -217,7 +222,7 @@ app.post("/api/add_user", function (req, res) {
     </html>`);
   }
   connection.query(
-    "INSERT INTO `nodelogin`.`accounts` (`username`, `password`) VALUES (?, ?)",
+    "INSERT INTO accounts (`username`, `password`) VALUES (?, ?)",
     [user.username, user.password],
     function (error, results, fields) {
       console.log("adding user");
@@ -360,7 +365,7 @@ app.post(
         if (!skipClassAndSemester && classCode /*&& semesterCode*/) {
           skipClassAndSemester = true;
           connection.query(
-            "INSERT INTO `nodelogin`.`classes` (`classCode`) VALUES (?)",
+            "INSERT INTO `classes` (`classCode`) VALUES (?)",
             [classCode],
             function (error, results, fields) {
               // If there is an issue with the query, output the error
@@ -377,7 +382,7 @@ app.post(
             }
           );
           // connection.query(
-          //   "INSERT INTO `nodelogin`.`semesters` (`classCode`, `semesterCode`) VALUES (?, ?)",
+          //   "INSERT INTO `semesters` (`classCode`, `semesterCode`) VALUES (?, ?)",
           //   [classCode, semesterCode],
           //   function (error, results, fields) {
           //     // If there is an issue with the query, output the error
@@ -403,7 +408,7 @@ app.post(
           stdLMName = tmp[3];
           stdFName = tmp[4];
           connection.query(
-            "INSERT INTO `nodelogin`.`students` \
+            "INSERT INTO `students` \
               (`classCode`, `stdCode`, `stdFName`, `stdLMName`) \
               VALUES(?, ?, ?, ?)",
             [classCode, stdCode, stdFName, stdLMName],
@@ -489,7 +494,7 @@ app.post("/api/get_classes", function (req, res) {
     return;
   }
   connection.query(
-    "SELECT * FROM `nodelogin`.`classes`",
+    "SELECT * FROM `classes`",
     function (error, results, fields) {
       // If there is an issue with the query, output the error
       if (error) {
@@ -513,7 +518,7 @@ app.post("/api/get_semesters", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "SELECT * FROM `nodelogin`.`semesters` WHERE classCode = ?",
+    "SELECT * FROM `semesters` WHERE classCode = ?",
     [data.classCode],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
@@ -538,7 +543,7 @@ app.post("/api/get_students", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "SELECT * FROM `nodelogin`.`students` WHERE classCode = ?",
+    "SELECT * FROM `students` WHERE classCode = ?",
     [data.classCode],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
@@ -561,7 +566,7 @@ app.post("/api/get_accounts", function (req, res) {
     return;
   }
   connection.query(
-    "SELECT * FROM `nodelogin`.`accounts` WHERE username != 'admin'",
+    "SELECT * FROM `accounts` WHERE username != 'admin'",
     function (error, results, fields) {
       // If there is an issue with the query, output the error
       if (error) {
@@ -652,7 +657,7 @@ app.post("/api/get_violation_detail", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "SELECT * FROM `nodelogin`.`violation_detail` WHERE job = ?",
+    "SELECT * FROM `violation_detail` WHERE job = ?",
     [data.job],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
@@ -678,7 +683,7 @@ app.post("/api/add_violation_detail", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "INSERT INTO `nodelogin`.`violation_detail` (`job`, `detail`) VALUES(?, ?)",
+    "INSERT INTO `violation_detail` (`job`, `detail`) VALUES(?, ?)",
     [data.job, data.detail],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
@@ -761,7 +766,7 @@ app.post("/api/add_violation_records", function (req, res) {
   }
 
   let query =
-    "INSERT INTO `nodelogin`.`violation_records` \
+    "INSERT INTO `violation_records` \
     (`classCode`, `semesterCode`, `job`, `detailId`, `detailInfo`, `createdBy`, `createdDate`) \
     VALUES ";
   for (i = 0; i < detailArr.length; ++i) {
