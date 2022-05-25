@@ -30,7 +30,7 @@
                 <script type="text/javascript">
                   document.getElementById("user").innerHTML = sessionStorage.getItem("username");
                 </script>
-                <a href="/logout">Đăng xuất</a>
+                <a href="/logout" class="navbar-menu-link">Đăng xuất</a>
                 <a href="#" id="menu" class="navbar-menu-link">Menu chính</a>
               </nav>
             </div>
@@ -60,6 +60,8 @@
         <input class="input" type="text" id="text-semester" name="semesterCode" required /> </input>
         <label class="label">Danh mục vi phạm:</label>
         <select class="select" type="text" id="drop-violation" name="violation" required /> </select>
+        <label class="label">Đơn vị:</label>
+        <select class="select" type="text" id="drop-department" name="department" /> </select>
         <!-- <select class="select" id="drop-semesters" name="semesterCode" required> </select>
         <label class="label">Học viên:</label>
         <select class="select" id="drop-students" name="stdCode" required> </select> -->
@@ -71,12 +73,9 @@
             <tbody>
               <tr>
                 <td style="width:2%">STT</td>
-                <td style="width:10%">Ngày</td>
-                <!-- <td style="width:10%">Mã HV</td> -->
-                <td style="width:35%">Nội dung</td>
-                <td style="width:35%">Biện pháp xử lí</td>
-                <!-- <td style="width:4%"></td>
-                <td style="width:4%"></td> -->
+                <td style="width:8%">Ngày</td>
+                <td style="width:40%">Nội dung</td>
+                <td style="width:40%">Biện pháp phòng tránh</td>
               </tr>
             </tbody>
           </table><br />
@@ -229,6 +228,25 @@
       xmlhttp.send(JSON.stringify({
         "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
       }));
+
+      // load data into dropdown departments
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var depts = JSON.parse(this.responseText);
+          select = document.getElementById("drop-department");
+          select.innerHTML = "<option value=\"\">- Chọn nội dung -</option>";
+          depts.forEach(dept => {
+            var option = document.createElement("option");
+            option.value = dept.name;
+            option.text = dept.name;
+            select.appendChild(option);
+          });
+        };
+      };
+      xmlhttp.open("POST", location.origin + "/api/get_department", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send();
     }
 
     document.getElementById("drop-classes").addEventListener("change",
@@ -238,9 +256,8 @@
         xmlhttp.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
             var job = JSON.parse(this.responseText);
-            console.log(job);
-            if (job.length == 0) {
-              alert('Bạn không được phân công phụ trách lớp này!');
+            if (sessionStorage.getItem("username") != 'admin' && !job.length) {
+              alert('Không được phân công phụ trách lớp này!');
               location.replace('/ktgs-thi');
             }
           };
@@ -251,13 +268,8 @@
           "classCode": document.getElementById("drop-classes").value,
           "username": sessionStorage.getItem("username")
         }));
-      },
-      false
-    );
 
-    document.getElementById("drop-violation").addEventListener("change",
-      function () {
-        // violations
+        // load record
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
@@ -266,6 +278,10 @@
               table.deleteRow(i);
             }
 
+            var enableAttr = "disabled";
+            if (sessionStorage.getItem("username") == 'admin') {
+              enableAttr = "";
+            }
             var vRecords = JSON.parse(this.responseText);
             vRecords.forEach(record => {
               var table = document.getElementById("tbl-violations");
@@ -279,25 +295,17 @@
               var date = row.insertCell(cellCnt++);
               date.innerHTML = record.createdDate;
 
-              // var stdCode = row.insertCell(cellCnt++);
-              // stdCode.innerHTML = document.getElementById("drop-students").value;
-
               var violation = row.insertCell(cellCnt++);
-              violation.innerHTML = record.detailInfo;
+              violation.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.detailInfo}"></input>`;
 
-              // var upload = row.insertCell(cellCnt++);
-              // upload.innerHTML =
-              //   ' <a upload>\
-              //       <img src="/img/upload.png" width="24" height = "24" >\
-              //       </img> \
-              //     </a > ';
+              var prevention = row.insertCell(cellCnt++);
+              prevention.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.prevention}"></input>`;
 
-              // var download = row.insertCell(cellCnt++);
-              // download.innerHTML =
-              //   ' <a download>\
-              //       <img src="/img/download.png" width="24" height = "24" >\
-              //       </img> \
-              //     </a > ';
+              if (sessionStorage.getItem("username") == 'admin') {
+                var update_delete = row.insertCell(cellCnt++);
+                update_delete.innerHTML = "<button>Sửa</button><button>Xoá</button>";
+              }
+
             });
           }
         };
@@ -307,6 +315,13 @@
           "classCode": document.getElementById("drop-classes").value,
           "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
         }));
+      },
+      false
+    );
+
+    document.getElementById("drop-violation").addEventListener("change",
+      function () {
+
       });
 
     document.getElementById("input-date").addEventListener("change",
@@ -322,15 +337,17 @@
             let valid = false;
             if (sessionStorage.getItem("username") != "admin") {
               job.forEach(j => {
-                console.log(j)
-                let date = document.getElementById("input-date").value;
-                if (date >= j["assignFrom"] && date <= j["assignTo"]) {
-                  valid = true;
-                }
-                if (!valid) {
-                  alert("Không được phân công ngày đã chọn. Vui lòng chọn ngày đã được phân công.");
-                  document.getElementById("input-date").value = "";
-                  return;
+                if (j["jobType"] == "thi") {
+                  console.log(j)
+                  let date = document.getElementById("input-date").value;
+                  if (date >= j["assignFrom"] && date <= j["assignTo"]) {
+                    valid = true;
+                  }
+                  if (!valid) {
+                    alert("Không được phân công ngày đã chọn. Vui lòng chọn ngày đã được phân công.");
+                    document.getElementById("input-date").value = "";
+                    return;
+                  }
                 }
               });
             }
@@ -375,25 +392,11 @@
 
         var violation = row.insertCell(cellCnt++);
         violation.innerHTML =
-          `<input class="input-cell" id="violation-info-${newViolationCount++}"> </input>`;
+          `<input class="input-cell" id="violation-info-${newViolationCount}"> </input>`;
 
         var prevention = row.insertCell(cellCnt++);
         prevention.innerHTML =
           `<input class="input-cell" id="prevention-info-${newViolationCount++}"> </input>`;
-
-        // var upload = row.insertCell(cellCnt++);
-        // upload.innerHTML =
-        //   ' <a upload>\
-        //       <img src="/img/upload.png" width="24" height = "24" >\
-        //       </img> \
-        //     </a > ';
-
-        // var download = row.insertCell(cellCnt++);
-        // download.innerHTML =
-        //   ' <a download>\
-        //       <img src="/img/download.png" width="24" height = "24" >\
-        //       </img> \
-        //     </a > ';
       },
       false
     );
@@ -402,19 +405,30 @@
       // Prevent the form from submitting.
       event.preventDefault();
 
+      if (sessionStorage.getItem("username") == 'admin') {
+        alert("Admin chỉ có thể sửa vi phạm!");
+        return;
+      }
+
       const formData = new FormData(event.target);
       // Build the data object.
       formData.append('job', document.getElementsByClassName('tab-active')[0].getAttribute('value'));
       formData.append('detailId', parseInt(document.getElementById("drop-violation").value));
       var detailArr = [];
+      var preventionArr = [];
       console.log("newViolationCount " + newViolationCount)
       for (i = 0; i < newViolationCount; ++i) {
-        detailArr.push({
-          'detailInfo': document.getElementById(`violation-info-${i}`).value
-        })
+        for (i = 0; i < newViolationCount; ++i) {
+          detailArr.push({
+            'detailInfo': document.getElementById(`violation-info-${i}`).value
+          })
+          preventionArr.push({
+            'preventionInfo': document.getElementById(`prevention-info-${i}`).value
+          })
+        }
       }
-      console.log(detailArr);
       formData.append('detailArr', JSON.stringify(detailArr));
+      formData.append('preventionArr', JSON.stringify(preventionArr));
 
       const data = {};
       formData.forEach((value, key) => (data[key] = value));

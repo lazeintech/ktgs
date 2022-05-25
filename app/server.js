@@ -1,3 +1,4 @@
+const ip = require("ip");
 const mysql = require("mysql");
 const express = require("express");
 const session = require("express-session");
@@ -8,10 +9,10 @@ const XLSX = require("xlsx");
 const multer = require("multer");
 
 const port = process.env.PORT || 8888;
-const dbhost = process.env.dbhost || 'localhost';
-const dbuser = process.env.dbuser || 'root';
-const dbpassword = process.env.dbpassword || '12345678';
-const dbname = process.env.dbname || 'nodelogin';
+const dbhost = process.env.dbhost || "localhost";
+const dbuser = process.env.dbuser || "root";
+const dbpassword = process.env.dbpassword || "12345678";
+const dbname = process.env.dbname || "nodelogin";
 
 const connection = mysql.createConnection({
   host: dbhost,
@@ -48,13 +49,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "/css")));
 app.use(express.static(path.join(__dirname, "/html")));
+app.use(express.static(path.join(__dirname, "/css")));
+app.use(express.static(path.join(__dirname, "/libs")));
 app.use("/img", express.static(path.join(__dirname, "/img")));
 app.listen(port);
 
 // CONFIGURATIONs
-console.log("Server started at http://localhost:" + port);
+console.log(`Server started at ${ip.address()}:${port}`);
 
 ///////////////////////////////////////////////////////////////////////////////
 // SERVINGs
@@ -590,8 +592,14 @@ app.post("/api/assign_job", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "INSERT INTO job_assignments (`classCode`, `username`, `assignFrom`, `assignTo`) VALUES(?, ?, ?, ?)",
-    [data.classCode, data.username, data.assignFrom, data.assignTo],
+    "INSERT INTO job_assignments (`classCode`, `username`, `jobType`, `assignFrom`, `assignTo`) VALUES(?, ?, ?, ?, ?)",
+    [
+      data.classCode,
+      data.username,
+      data.jobType,
+      data.assignFrom,
+      data.assignTo,
+    ],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
       if (error) {
@@ -628,11 +636,41 @@ app.post("/api/get_job", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "SELECT classCode, username, \
+    "SELECT classCode, username, jobType, \
         DATE_FORMAT(assignFrom, '%Y-%m-%d') as assignFrom, \
         DATE_FORMAT(assignTo, '%Y-%m-%d') as assignTo \
      FROM job_assignments WHERE classCode = ? AND username = ?",
     [data.classCode, data.username],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      console.log(results);
+      res.statusCode = 200;
+      res.send(results);
+    }
+  );
+});
+
+// get_alljob
+app.post("/api/get_alljob", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "SELECT \
+        jobType, \
+        DATE_FORMAT(assignFrom, '%Y-%m-%d') as assignFrom, \
+        DATE_FORMAT(assignTo, '%Y-%m-%d') as assignTo \
+     FROM job_assignments WHERE username = ?",
+    [data.username],
     function (error, results, fields) {
       // If there is an issue with the query, output the error
       if (error) {
@@ -711,6 +749,69 @@ app.post("/api/add_violation_detail", function (req, res) {
     </html>`);
 });
 
+// add_department
+app.post("/api/add_department", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "INSERT INTO `department` (`name`) VALUES (?);",
+    [data.department],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      console.log(results);
+    }
+  );
+  res.statusCode = 200;
+  res.end(`
+    <html>
+      <head>
+        <meta charset="utf-8">
+      </head>
+      <body>
+        Thêm thành công. <br/>
+        <form action="/setting">
+          <input type="hidden" name="tab" value="tabid5"/>
+          <input type="submit" value="OK"/>
+        </form>
+      </body>
+    </html>`);
+});
+
+// get_department
+app.post("/api/get_department", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "SELECT * FROM `department`",
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      console.log(results);
+      res.statusCode = 200;
+      res.send(results);
+    }
+  );
+});
+
 // get_violation_records
 app.post("/api/get_violation_records", function (req, res) {
   if (!req.session.loggedin) {
@@ -721,14 +822,10 @@ app.post("/api/get_violation_records", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
   connection.query(
-    "SELECT \
-        violation_detail.detail, \
-        violation_records.stdCode, \
-        violation_records.detailInfo, \
-        DATE_FORMAT (violation_records.createdDate, '%d/%m/%Y') as createdDate, \
-        violation_records.createdBy \
-      FROM nodelogin.violation_detail \
-      INNER JOIN nodelogin.violation_records \
+    "SELECT *,\
+        DATE_FORMAT (violation_records.createdDate, '%d/%m/%Y') as createdDate \
+      FROM violation_detail \
+      INNER JOIN violation_records \
       ON violation_records.detailid = violation_detail.detailid \
       WHERE ( \
         violation_records.classCode = ? \
@@ -767,7 +864,7 @@ app.post("/api/add_violation_records", function (req, res) {
 
   let query =
     "INSERT INTO `violation_records` \
-    (`classCode`, `semesterCode`, `job`, `detailId`, `detailInfo`, `createdBy`, `createdDate`) \
+    (`classCode`, `semesterCode`, `job`, `detailId`, `detailInfo`, `preventionInfo`, `createdBy`, `createdDate`) \
     VALUES ";
   for (i = 0; i < detailArr.length; ++i) {
     query += `('${data.classCode}', 
@@ -775,6 +872,7 @@ app.post("/api/add_violation_records", function (req, res) {
         '${data.job}', 
         '${data.detailId}',
         '${detailArr[i].detailInfo}',
+        '${preventionArr[i].preventionInfo}',
         '${req.session.username}',
         '${data.date}')`;
     if (i + 1 == detailArr.length) query += "";

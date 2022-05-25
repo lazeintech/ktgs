@@ -35,7 +35,7 @@
                 <script type="text/javascript">
                   document.getElementById("user").innerHTML = sessionStorage.getItem("username");
                 </script>
-                <a href="/logout">Đăng xuất</a>
+                <a href="/logout" class="navbar-menu-link">Đăng xuất</a>
                 <a href="#" id="menu" class="navbar-menu-link">Menu chính</a>
               </nav>
             </div>
@@ -50,7 +50,8 @@
       <a href="#tab2" data-tab="1" class="tab" id="tabid2">Thêm lớp</a>
       <a href="#tab3" data-tab="1" class="tab" id="tabid3">Phân công lớp</a>
       <a href="#tab4" data-tab="1" class="tab" id="tabid4">Tuỳ chỉnh Danh mục vi phạm</a>
-      <a href="#tab5" data-tab="1" class="tab" id="tabid5">Thống kê</a>
+      <a href="#tab5" data-tab="1" class="tab" id="tabid5">Tuỳ chỉnh Đơn vị</a>
+      <a href="#tab6" data-tab="1" class="tab" id="tabid6">Thống kê</a>
     </nav>
     <div id="tab1" data-tab-content="1" class="tab-content">
       <form action="/api/add_user" class="form" id="ine15" method="post">
@@ -83,11 +84,17 @@
     <div id="tab3" data-tab-content="1" class="tab-content">
       <form class="form" id="iepnx" action="/api/assign_job" method="post">
         <div class=" form-group">
-          <label class="label">Lớp</label>
+          <label class="label">Lớp:</label>
           <select class="select" id="drop-classes" name="classCode" required>
           </select>
-          <label class="label" id="i3hhi">Cán bộ</label>
-          <select class="select" id="drop-assignment" name="username" required>
+          <label class="label" id="i3hhi">Cán bộ:</label>
+          <select class="select" id="drop-job-accounts" name="username" required>
+          </select>
+          <label class="label">Nhiệm vụ:</label>
+          <select class="select" id="drop-job-type" name="jobType" required>
+            <option value="">- Chọn nhiệm vụ -</option>
+            <option value="thi">I - KIỂM TRA GIÁM SÁT THI</option>
+            <option value="thvd">II - KIỂM TRA GIÁM SÁT THI THỰC HÀNH VẤN ĐÁP</option>
           </select>
           <label class="label" id="">Thời gian từ ngày:</label>
           <input type="date" id="assignFrom" name="assignFrom" required />
@@ -100,15 +107,16 @@
     <div id="tab4" data-tab-content="1" class="tab-content">
       <form class="form" action="/api/add_violation_detail" method="post">
         <div class="form-group">
-          <label class="label" id="iorzgu">Chọn công việc:</label>
+          <label class="label" id="iorzgu">Chọn danh mục vi phạm</label>
           <select class="select" id="drop-violation" name="job" required>
-            <option value="">- Select option -</option>
-            <option value="1">B1 - TỔ CHỨC THI</option>
-            <option value="2">B2 - LÀM ĐỀ</option>
-            <option value="3">B3 - COI THI</option>
-            <option value="4">B4 - LÀM PHÁCH GỬI BÀI</option>
-            <option value="5">B5 - CHẤM THI</option>
-            <option value="6">B6 - THẨM ĐỊNH LUẬN VĂN LUẬN ÁN</option>
+            <option value="">- Chọn danh mục -</option>
+            <option value="1">I.1 TỔ CHỨC THI</option>
+            <option value="2">I.2 LÀM ĐỀ</option>
+            <option value="3">I.3 COI THI</option>
+            <option value="4">I.4 LÀM PHÁCH GỬI BÀI</option>
+            <option value="5">I.5 CHẤM THI</option>
+            <option value="6">I.6 THẨM ĐỊNH LUẬN VĂN LUẬN ÁN</option>
+            <option value="7">II GIÁM SÁT THI THỰC HÀNH VẤN ĐÁP</option>
           </select>
           Danh mục vi phạm đã có:
           <div class="row" id="existing-violation">
@@ -120,6 +128,18 @@
       </form>
     </div>
     <div id="tab5" data-tab-content="1" class="tab-content">
+      <form class="form" action="/api/add_department" method="post">
+        <div class="form-group">
+          Đơn vị đã có:
+          <div class="row" id="existing-department">
+          </div>
+          <label class="label" id="ialv75">Thêm Đơn vị:</label>
+          <input placeholder="Tên đơn vị" class="input" id="department" name="department" required />
+          <button type="submit" class="button">Thêm</button>
+        </div>
+      </form>
+    </div>
+    <div id="tab6" data-tab-content="1" class="tab-content">
       <form class="form" action="/api/statistic" method="post">
         <div class="form-group">
           <label class="label" id="">Thời gian từ:</label>
@@ -289,7 +309,7 @@
         });
 
         var reportDrop = document.getElementById("drop-report-accounts");
-        var assignDrop = document.getElementById("drop-assignment");
+        var assignDrop = document.getElementById("drop-job-accounts");
         assignDrop.innerHTML = reportDrop.innerHTML = "<option value=\"\">- Chọn cán bộ -</option>";
         accounts.forEach(account => {
           var option = document.createElement("option");
@@ -305,6 +325,23 @@
       }
     };
     xmlhttp.open("POST", location.origin + "/api/get_accounts", true);
+    xmlhttp.send();
+
+    // department
+    document.getElementById("existing-department").innerHTML = "";
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var depts = JSON.parse(this.responseText);
+        var cnt = 1;
+        depts.forEach(dept => {
+          document.getElementById("existing-department").innerHTML
+            += cnt++ + ". " + dept.name + "<br/>";
+        });
+      };
+    };
+    xmlhttp.open("POST", location.origin + "/api/get_department", true);
+    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xmlhttp.send();
 
     // goto tab
