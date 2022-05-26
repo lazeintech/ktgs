@@ -227,7 +227,7 @@ app.post("/api/add_user", function (req, res) {
     "INSERT INTO accounts (`username`, `password`) VALUES (?, ?)",
     [user.username, user.password],
     function (error, results, fields) {
-      console.log("adding user");
+      // console.log("adding user");
       // If there is an issue with the query, output the error
       if (error) {
         if (error.code === "ER_DUP_ENTRY") {
@@ -289,7 +289,7 @@ var storage = multer.diskStorage({
     cb(null, __dirname + "/uploads/studentLists/");
   },
   filename: (req, file, cb) => {
-    console.log(file.originalname);
+    // console.log(file.originalname);
     cb(null, file.originalname);
   },
 });
@@ -298,7 +298,7 @@ var storage_att = multer.diskStorage({
     cb(null, __dirname + "/uploads/attachments/");
   },
   filename: (req, file, cb) => {
-    console.log(file.originalname);
+    // console.log(file.originalname);
     cb(null, file.originalname);
   },
 });
@@ -424,9 +424,9 @@ app.post(
               }
               // If success
               if (results.affectedRows > 0) {
-                console.log(
-                  "Đã thêm SV " + stdLMName + " " + stdFName + " vào DB."
-                );
+                // console.log(
+                //   "Đã thêm SV " + stdLMName + " " + stdFName + " vào DB."
+                // );
               } else {
                 res.statusCode = 500;
                 res.end(results);
@@ -495,6 +495,8 @@ app.post("/api/get_classes", function (req, res) {
     res.end("Login first!");
     return;
   }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
   connection.query(
     "SELECT * FROM `classes`",
     function (error, results, fields) {
@@ -567,6 +569,8 @@ app.post("/api/get_accounts", function (req, res) {
     res.end("Login first!");
     return;
   }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
   connection.query(
     "SELECT * FROM `accounts` WHERE username != 'admin'",
     function (error, results, fields) {
@@ -607,7 +611,7 @@ app.post("/api/assign_job", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
     }
   );
   res.statusCode = 200;
@@ -648,7 +652,7 @@ app.post("/api/get_job", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
@@ -678,7 +682,7 @@ app.post("/api/get_alljob", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
@@ -704,7 +708,7 @@ app.post("/api/get_violation_detail", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
@@ -730,7 +734,7 @@ app.post("/api/add_violation_detail", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
     }
   );
   res.statusCode = 200;
@@ -768,7 +772,7 @@ app.post("/api/add_department", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
     }
   );
   res.statusCode = 200;
@@ -805,7 +809,7 @@ app.post("/api/get_department", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
@@ -839,7 +843,7 @@ app.post("/api/get_violation_records", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
       res.statusCode = 200;
       res.send(results);
     }
@@ -886,8 +890,60 @@ app.post("/api/add_violation_records", function (req, res) {
       throw error;
     }
     // If success
-    console.log(results);
+    // console.log(results);
   });
+  res.statusCode = 200;
+  res.end();
+});
+
+// update_violation_record
+app.post("/api/update_violation_record", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "UPDATE `violation_records` SET detailInfo = ?, preventionInfo = ? WHERE id = ?",
+    [data.detailInfo, data.preventionInfo, data.id],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      // console.log(results);
+    }
+  );
+  res.statusCode = 200;
+  res.end();
+});
+
+// delete_violation_record
+app.post("/api/delete_violation_record", function (req, res) {
+  if (!req.session.loggedin) {
+    res.statusCode = 400;
+    res.end("Login first!");
+    return;
+  }
+  const data = req.body;
+  console.log("%s: %j", req.path, data);
+  connection.query(
+    "DELETE FROM `violation_records` WHERE `id` = ?",
+    [parseInt(data.id)],
+    function (error, results, fields) {
+      // If there is an issue with the query, output the error
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+      // If success
+      // console.log(results);
+    }
+  );
   res.statusCode = 200;
   res.end();
 });
@@ -914,7 +970,7 @@ app.post("/api/statistic", function (req, res) {
         throw error;
       }
       // If success
-      console.log(results);
+      // console.log(results);
       res.statusCode = 200;
       res.send(results);
     }

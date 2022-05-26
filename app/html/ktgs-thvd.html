@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <form class="form" id="violation-form" onsubmit="addViolations(event)">
+    <form class="form" id="violation-form" onsubmit="addRecords(event)">
       <div class="form-group">
         <label class="label">Lớp phụ trách:</label>
         <select class="select" id="drop-classes" name="classCode" required> </select>
@@ -290,13 +290,14 @@
               violation.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.detailInfo}"></input>`;
 
               var prevention = row.insertCell(cellCnt++);
-              prevention.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.prevention}"></input>`;
+              prevention.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.preventionInfo}"></input>`;
 
               if (sessionStorage.getItem("username") == 'admin') {
                 var update_delete = row.insertCell(cellCnt++);
-                update_delete.innerHTML = "<button>Sửa</button><button>Xoá</button>";
+                update_delete.innerHTML =
+                  `<button onclick="updateRecord(${record["id"]}, ${totalRowCount})">Sửa</button>
+                   <button onclick="deleteRecord(${record["id"]})">Xoá</button>`;
               }
-
             });
           }
         };
@@ -391,7 +392,7 @@
       false
     );
 
-    function addViolations(event) {
+    function addRecords(event) {
       // Prevent the form from submitting.
       event.preventDefault();
 
@@ -438,6 +439,59 @@
       xmlhttp.open("POST", location.origin + "/api/add_violation_records", true);
       xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xmlhttp.send(JSON.stringify(data));
+    }
+
+    function updateRecord(recordId, rowId) {
+      // Prevent the form from submitting.
+      event.preventDefault();
+
+      // console.log("update rid " + recordId);
+      var table = document.getElementById("tbl-violations");
+
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            alert("Sửa vi phạm thành công");
+            loadTab(document.getElementsByClassName('tab-active')[0].getAttribute('value'));
+          }
+          else {
+            alert("Có lỗi khi sửa vi phạm: " + this.responseText);
+          }
+        }
+      };
+      xmlhttp.open("POST", location.origin + "/api/update_violation_record", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify({
+        "detailInfo": table.rows[rowId].cells[2].children[0].value,
+        "preventionInfo": table.rows[rowId].cells[3].children[0].value,
+        "id": recordId
+      }));
+    }
+
+    function deleteRecord(recordId) {
+      // Prevent the form from submitting.
+      event.preventDefault();
+
+      // console.log("delete rid " + recordId);
+
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            alert("Xoá vi phạm thành công");
+            loadTab(document.getElementsByClassName('tab-active')[0].getAttribute('value'));
+          }
+          else {
+            alert("Có lỗi xoá sửa vi phạm: " + this.responseText);
+          }
+        }
+      };
+      xmlhttp.open("POST", location.origin + "/api/delete_violation_record", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify({
+        "id": recordId
+      }));
     }
   </script>
 </body>

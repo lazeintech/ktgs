@@ -37,22 +37,22 @@
           </div>
         </div>
         <nav data-tab-container="1" class="tab-container" id="tab-container-id">
-          <a href="#tab1" data-tab="1" value="1" class="tab" id="tabid1" onclick="loadTab()">
+          <a href="#tab1" data-tab="1" value="1" class="tab" id="tabid1" onclick="loadTab(1)">
             TỔ CHỨC THI<br />(I)<br /></a>
-          <a href="#tab2" data-tab="1" value="2" class="tab" id="tabid2" onclick="loadTab()">
+          <a href="#tab2" data-tab="1" value="2" class="tab" id="tabid2" onclick="loadTab(2)">
             LÀM ĐỀ<br />(II)<br /></a>
-          <a href="#tab3" data-tab="1" value="3" class="tab" id="tabid3" onclick="loadTab()">
+          <a href="#tab3" data-tab="1" value="3" class="tab" id="tabid3" onclick="loadTab(3)">
             COI THI<br />(III)<br /></a>
-          <a href="#tab4" data-tab="1" value="4" class="tab" id="tabid4" onclick="loadTab()">
+          <a href="#tab4" data-tab="1" value="4" class="tab" id="tabid4" onclick="loadTab(4)">
             LÀM PHÁCH - GỬI BÀI<br />(IV)<br /></a>
-          <a href="#tab5" data-tab="1" value="5" class="tab" id="tabid5" onclick="loadTab()">
+          <a href="#tab5" data-tab="1" value="5" class="tab" id="tabid5" onclick="loadTab(5)">
             CHẤM THI<br />(V)<br /></a>
-          <a href="#tab6" data-tab="1" value="6" class="tab" id="tabid6" onclick="loadTab()">
+          <a href="#tab6" data-tab="1" value="6" class="tab" id="tabid6" onclick="loadTab(6)">
             THẨM ĐỊNH LUẬN VĂN, LUẬN ÁN<br />(VI)<br /></a>
         </nav>
       </div>
     </div>
-    <form class="form" id="violation-form" onsubmit="addViolations(event)">
+    <form class="form" id="violation-form" onsubmit="addRecords(event)">
       <div class="form-group">
         <label class="label">Lớp phụ trách:</label>
         <select class="select" id="drop-classes" name="classCode" required> </select>
@@ -171,18 +171,18 @@
     );
 
     function onLoad() {
-      loadTab();
-
       // goto tab
       var url_string = location.href;
       var url = new URL(url_string);
       var tab = url.searchParams.get("tab");
       if (tab)
         document.getElementById(tab).click();
+      else
+        loadTab(1);
     }
 
     let newViolationCount = 0;
-    function loadTab() {
+    function loadTab(tabid) {
       newViolationCount = 0;
       document.getElementById("text-semester").innerHTML = '';
       document.getElementById("input-date").value = '';
@@ -226,7 +226,7 @@
       xmlhttp.open("POST", location.origin + "/api/get_violation_detail", true);
       xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xmlhttp.send(JSON.stringify({
-        "job": document.getElementsByClassName('tab-active')[0].getAttribute('value')
+        "job": tabid
       }));
 
       // load data into dropdown departments
@@ -282,13 +282,14 @@
             if (sessionStorage.getItem("username") == 'admin') {
               enableAttr = "";
             }
+            var table = document.getElementById("tbl-violations");
             var vRecords = JSON.parse(this.responseText);
             vRecords.forEach(record => {
-              var table = document.getElementById("tbl-violations");
+              // console.log(record)
               var totalRowCount = table.rows.length;
               var row = table.insertRow(totalRowCount);
-              cellCnt = 0;
 
+              cellCnt = 0;
               var number = row.insertCell(cellCnt++);
               number.innerHTML = totalRowCount;
 
@@ -299,11 +300,13 @@
               violation.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.detailInfo}"></input>`;
 
               var prevention = row.insertCell(cellCnt++);
-              prevention.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.prevention}"></input>`;
+              prevention.innerHTML = `<input class="input-cell" ${enableAttr} value="${record.preventionInfo}"></input>`;
 
               if (sessionStorage.getItem("username") == 'admin') {
                 var update_delete = row.insertCell(cellCnt++);
-                update_delete.innerHTML = "<button>Sửa</button><button>Xoá</button>";
+                update_delete.innerHTML =
+                  `<button onclick="updateRecord(${record["id"]}, ${totalRowCount})">Sửa</button>
+                   <button onclick="deleteRecord(${record["id"]})">Xoá</button>`;
               }
 
             });
@@ -319,11 +322,6 @@
       false
     );
 
-    document.getElementById("drop-violation").addEventListener("change",
-      function () {
-
-      });
-
     document.getElementById("input-date").addEventListener("change",
       function () {
         // validate assignment
@@ -332,13 +330,13 @@
         xmlhttp.onreadystatechange = function () {
           if (this.readyState == 4 && this.status == 200) {
             var job = JSON.parse(this.responseText);
-            console.log(job);
+            // console.log(job);
 
             let valid = false;
             if (sessionStorage.getItem("username") != "admin") {
               job.forEach(j => {
                 if (j["jobType"] == "thi") {
-                  console.log(j)
+                  // console.log(j)
                   let date = document.getElementById("input-date").value;
                   if (date >= j["assignFrom"] && date <= j["assignTo"]) {
                     valid = true;
@@ -401,7 +399,7 @@
       false
     );
 
-    function addViolations(event) {
+    function addRecords(event) {
       // Prevent the form from submitting.
       event.preventDefault();
 
@@ -416,7 +414,7 @@
       formData.append('detailId', parseInt(document.getElementById("drop-violation").value));
       var detailArr = [];
       var preventionArr = [];
-      console.log("newViolationCount " + newViolationCount)
+      // console.log("newViolationCount " + newViolationCount)
       for (i = 0; i < newViolationCount; ++i) {
         for (i = 0; i < newViolationCount; ++i) {
           detailArr.push({
@@ -432,15 +430,14 @@
 
       const data = {};
       formData.forEach((value, key) => (data[key] = value));
-      console.log(data);
+      // console.log(data);
 
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function () {
-        console.log(this);
         if (this.readyState == 4) {
           if (this.status == 200) {
             alert("Thêm vi phạm thành công");
-            loadTab();
+            loadTab(document.getElementsByClassName('tab-active')[0].getAttribute('value'));
           }
           else {
             alert("Có lỗi khi thêm vi phạm: " + this.responseText);
@@ -450,6 +447,59 @@
       xmlhttp.open("POST", location.origin + "/api/add_violation_records", true);
       xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xmlhttp.send(JSON.stringify(data));
+    }
+
+    function updateRecord(recordId, rowId) {
+      // Prevent the form from submitting.
+      event.preventDefault();
+
+      // console.log("update rid " + recordId);
+      var table = document.getElementById("tbl-violations");
+
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            alert("Sửa vi phạm thành công");
+            loadTab(document.getElementsByClassName('tab-active')[0].getAttribute('value'));
+          }
+          else {
+            alert("Có lỗi khi sửa vi phạm: " + this.responseText);
+          }
+        }
+      };
+      xmlhttp.open("POST", location.origin + "/api/update_violation_record", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify({
+        "detailInfo": table.rows[rowId].cells[2].children[0].value,
+        "preventionInfo": table.rows[rowId].cells[3].children[0].value,
+        "id": recordId
+      }));
+    }
+
+    function deleteRecord(recordId) {
+      // Prevent the form from submitting.
+      event.preventDefault();
+
+      // console.log("delete rid " + recordId);
+
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            alert("Xoá vi phạm thành công");
+            loadTab(document.getElementsByClassName('tab-active')[0].getAttribute('value'));
+          }
+          else {
+            alert("Có lỗi xoá sửa vi phạm: " + this.responseText);
+          }
+        }
+      };
+      xmlhttp.open("POST", location.origin + "/api/delete_violation_record", true);
+      xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xmlhttp.send(JSON.stringify({
+        "id": recordId
+      }));
     }
   </script>
 </body>
