@@ -1053,7 +1053,6 @@ app.post("/api/statistic", function (req, res) {
     XLSX.writeFile(wb, __dirname + "/uploads/export.xlsx");
 
     res.statusCode = 200;
-    res.end();
-    // res.download(__dirname + "/uploads/export.xlsx");
+    res.download(__dirname + "/uploads/export.xlsx");
   });
 });
