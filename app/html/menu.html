@@ -124,7 +124,6 @@
 <script>
   document.getElementById("btn-ktgs-thi").addEventListener("click",
     function () {
-      console.log(location.origin + "/ktgs-thi");
       location.replace(location.origin + "/ktgs-thi");
     },
     false
@@ -152,7 +151,6 @@
       if (this.readyState == 4 && this.status == 200) {
         var jobs = JSON.parse(this.responseText);
         jobs.forEach(job => {
-          console.log(job)
           // only display current month's job
           if (job['assignFrom'].includes(cal.month.format('YYYY-MM'))) {
             fromDate = parseInt(job['assignFrom'].split('-')[2])

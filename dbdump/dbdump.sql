@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `nodelogin` /*!40100 DEFAULT CHARACTER SET utf8 */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `nodelogin`;
 -- MySQL dump 10.13  Distrib 8.0.28, for macos11 (x86_64)
 --
 -- Host: localhost    Database: nodelogin
@@ -69,6 +67,30 @@ INSERT INTO `classes` VALUES (1,'TEST-CLASS'),(2,'NCS26-TPH');
 UNLOCK TABLES;
 
 --
+-- Table structure for table `department`
+--
+
+DROP TABLE IF EXISTS `department`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `department` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `department`
+--
+
+LOCK TABLES `department` WRITE;
+/*!40000 ALTER TABLE `department` DISABLE KEYS */;
+INSERT INTO `department` VALUES (1,'phong dao tao'),(2,'phong khao thi'),(3,'phong hieu truong');
+/*!40000 ALTER TABLE `department` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `job_assignments`
 --
 
@@ -79,13 +101,14 @@ CREATE TABLE `job_assignments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `classCode` varchar(45) NOT NULL,
   `username` varchar(50) NOT NULL,
+  `jobType` varchar(8) DEFAULT NULL,
   `assignFrom` date NOT NULL,
   `assignTo` date NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `classCode_idx` (`classCode`),
   CONSTRAINT `clsCode` FOREIGN KEY (`classCode`) REFERENCES `classes` (`classCode`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,8 +117,32 @@ CREATE TABLE `job_assignments` (
 
 LOCK TABLES `job_assignments` WRITE;
 /*!40000 ALTER TABLE `job_assignments` DISABLE KEYS */;
-INSERT INTO `job_assignments` VALUES (1,'TEST-CLASS','test','2022-05-02','2022-05-31');
+INSERT INTO `job_assignments` VALUES (1,'TEST-CLASS','test','thi','2022-05-02','2022-05-31'),(2,'TEST-CLASS','test','thvd','2022-05-15','2022-05-17');
 /*!40000 ALTER TABLE `job_assignments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `job_desc`
+--
+
+DROP TABLE IF EXISTS `job_desc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `job_desc` (
+  `job_id` int NOT NULL,
+  `job_desc` varchar(45) NOT NULL,
+  PRIMARY KEY (`job_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `job_desc`
+--
+
+LOCK TABLES `job_desc` WRITE;
+/*!40000 ALTER TABLE `job_desc` DISABLE KEYS */;
+INSERT INTO `job_desc` VALUES (1,'Tổ chức thi'),(2,'Làm đề'),(3,'Coi thi'),(4,'Làm phách - gửi bài'),(5,'Chấm thi'),(6,'Thẩm định luận văn luận án'),(7,'Giám sát thực hành vấn đáp');
+/*!40000 ALTER TABLE `job_desc` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -169,7 +216,7 @@ CREATE TABLE `violation_detail` (
   `detail` varchar(256) NOT NULL,
   PRIMARY KEY (`detailId`),
   UNIQUE KEY `id_UNIQUE` (`detailId`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,7 +225,7 @@ CREATE TABLE `violation_detail` (
 
 LOCK TABLES `violation_detail` WRITE;
 /*!40000 ALTER TABLE `violation_detail` DISABLE KEYS */;
-INSERT INTO `violation_detail` VALUES (2,1,'asdfasdf'),(3,1,'ffffffff'),(4,1,'bbbb'),(5,2,'hí hí hí'),(6,1,'quay bài'),(7,3,'giám thị ngủ gật'),(8,2,'làm sai đáp án'),(9,6,'tham dinh luon van'),(10,1,'duyet tu cach thi'),(11,2,'so luong de'),(12,3,'dinh chi'),(13,4,'danh dau bai'),(14,5,'danh dau bai'),(15,6,'sao chep');
+INSERT INTO `violation_detail` VALUES (2,1,'asdfasdf'),(3,1,'ffffffff'),(4,1,'bbbb'),(5,2,'hí hí hí'),(6,1,'quay bài'),(7,3,'giám thị ngủ gật'),(8,2,'làm sai đáp án'),(9,6,'tham dinh luon van'),(10,1,'duyet tu cach thi'),(11,2,'so luong de'),(12,3,'dinh chi'),(13,4,'danh dau bai'),(14,5,'danh dau bai'),(15,6,'sao chep'),(16,7,'thục hành vấn đáp');
 /*!40000 ALTER TABLE `violation_detail` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -196,15 +243,17 @@ CREATE TABLE `violation_records` (
   `stdCode` varchar(48) DEFAULT NULL,
   `job` int NOT NULL,
   `detailId` int NOT NULL,
-  `detailInfo` varchar(256) NOT NULL,
+  `detailInfo` varchar(256) DEFAULT NULL,
+  `preventionInfo` varchar(256) DEFAULT NULL,
   `createdBy` varchar(48) NOT NULL,
   `createdDate` date DEFAULT NULL,
+  `departmentId` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `createdBy_idx` (`createdBy`),
   KEY `detailId_idx` (`detailId`),
   CONSTRAINT `createdBy` FOREIGN KEY (`createdBy`) REFERENCES `accounts` (`username`),
   CONSTRAINT `detailId` FOREIGN KEY (`detailId`) REFERENCES `violation_detail` (`detailId`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -213,7 +262,7 @@ CREATE TABLE `violation_records` (
 
 LOCK TABLES `violation_records` WRITE;
 /*!40000 ALTER TABLE `violation_records` DISABLE KEYS */;
-INSERT INTO `violation_records` VALUES (1,'NCS26-TPH','2022','NCS26.TP.01',1,3,'','test',NULL),(2,'NCS26-TPH','2022','NCS26.TP.01',2,5,'','test',NULL),(3,'NCS26-TPH','2022','NCS26.TP.01',1,2,'','test',NULL),(4,'NCS26-TPH','2022','NCS26.TP.01',2,5,'','test','2022-04-22'),(6,'NCS26-TPH','2022','NCS26.TP.02',1,6,'','admin','2022-04-29'),(7,'NCS26-TPH','2022','NCS26.TP.10',1,4,'','admin','2022-04-01'),(8,'NCS26-TPH','2022','NCS26.TP.10',1,4,'','admin','2022-04-01'),(9,'NCS26-TPH','2022','NCS26.TP.10',1,4,'','admin','2022-04-01'),(10,'NCS26-TPH','2022','NCS26.TP.02',1,3,'','admin','2022-04-02'),(11,'NCS26-TPH','2022','NCS26.TP.01',2,5,'','admin','2022-04-02'),(12,'NCS26-TPH','2022','NCS26.TP.02',2,5,'','admin','2022-04-02'),(13,'NCS26-TPH','2022','NCS26.TP.01',2,8,'','admin','2022-03-31'),(14,'NCS26-TPH','2022','NCS26.TP.03',6,9,'','admin','2022-04-01'),(15,'NCS26-TPH','2022','NCS26.TP.01',1,6,'','admin','2022-04-01'),(16,'NCS26-TPH','2022','NCS26.TP.04',6,15,'','admin','2022-04-28'),(17,'NCS26-TPH','testataset',NULL,1,4,'oi doi doi oi','test','2022-03-31');
+INSERT INTO `violation_records` VALUES (8,'NCS26-TPH','2022','NCS26.TP.10',1,4,'asdfasdf','ffffff','test','2022-04-01',1),(11,'NCS26-TPH','2022','NCS26.TP.01',2,5,'',NULL,'test','2022-04-02',2),(12,'NCS26-TPH','2022','NCS26.TP.02',2,5,'',NULL,'test','2022-04-02',3),(13,'NCS26-TPH','2022','NCS26.TP.01',2,8,'',NULL,'test','2022-03-31',1),(14,'NCS26-TPH','2022','NCS26.TP.03',6,9,'',NULL,'test','2022-04-01',2),(16,'NCS26-TPH','2022','NCS26.TP.04',6,15,'',NULL,'test','2022-04-28',3),(18,'TEST-CLASS','adsfadf',NULL,7,16,'test','test','test','2022-05-15',NULL);
 /*!40000 ALTER TABLE `violation_records` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -226,4 +275,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-05-18  6:28:48
+-- Dump completed on 2022-05-27 16:38:35

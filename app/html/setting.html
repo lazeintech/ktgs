@@ -88,10 +88,10 @@
           <select class="select" id="drop-classes" name="classCode" required>
           </select>
           <label class="label" id="i3hhi">Cán bộ:</label>
-          <select class="select" id="drop-job-accounts" name="username" required>
+          <select class="select" id="drop-job-accounts" name="createdBy" required>
           </select>
-          <label class="label">Nhiệm vụ:</label>
-          <select class="select" id="drop-job-type" name="jobType" required>
+          <label class="label">Quá trình:</label>
+          <select class="select" id="drop-job-type" name="job_id" required>
             <option value="">- Chọn nhiệm vụ -</option>
             <option value="thi">I - KIỂM TRA GIÁM SÁT THI</option>
             <option value="thvd">II - KIỂM TRA GIÁM SÁT THI THỰC HÀNH VẤN ĐÁP</option>
@@ -107,9 +107,9 @@
     <div id="tab4" data-tab-content="1" class="tab-content">
       <form class="form" action="/api/add_violation_detail" method="post">
         <div class="form-group">
-          <label class="label" id="iorzgu">Chọn danh mục vi phạm</label>
+          <label class="label" id="iorzgu">Chọn quá trình vi phạm</label>
           <select class="select" id="drop-violation" name="job" required>
-            <option value="">- Chọn danh mục -</option>
+            <option value="">- Chọn quá trình -</option>
             <option value="1">I.1 TỔ CHỨC THI</option>
             <option value="2">I.2 LÀM ĐỀ</option>
             <option value="3">I.3 COI THI</option>
@@ -143,17 +143,29 @@
       <form class="form" action="/api/statistic" method="post">
         <div class="form-group">
           <label class="label" id="">Thời gian từ:</label>
-          <input type="date" id="fromDate" name="fromDate" required />
+          <input type="date" id="fromDate" name="fromDate" />
           <label class="label" id="">Đến:</label>
-          <input type="date" id="toDate" name="toDate" required />
+          <input type="date" id="toDate" name="toDate" />
           <label class="label" id="ihy0nj">Lớp</label>
-          <select class="select" id="drop-report-classes">
+          <select class="select" id="drop-report-classes" name="classCode">
+            <option value="">- Chọn lớp -</option>
           </select>
-          <label class="label" id="">Cán bộ phụ trách</label>
-          <select class="select" id="drop-report-accounts">
+          <label class="label" id="">Đơn vị vi phạm</label>
+          <select class="select" id="drop-report-departments" name="departmentId">
           </select>
-          <label class="label" id="">Danh mục vi phạm</label>
-          <select class="select" id="drop-report-violations">
+          <label class="label" id="">Người nhập vi phạm</label>
+          <select class="select" id="drop-report-accounts" name="createdBy">
+          </select>
+          <label class="label" id="">Quá trình vi phạm</label>
+          <select class="select" id="drop-report-violations" name="jobId">
+            <option value="">- Chọn quá trình -</option>
+            <option value="1.TỔ CHỨC THI">I.1 TỔ CHỨC THI</option>
+            <option value="2.LÀM ĐỀ">I.2 LÀM ĐỀ</option>
+            <option value="3.COI THI">I.3 COI THI</option>
+            <option value="4.LÀM PHÁCH GỬI BÀI">I.4 LÀM PHÁCH GỬI BÀI</option>
+            <option value="5.CHẤM THI">I.5 CHẤM THI</option>
+            <option value="6.THẨM ĐỊNH LUẬN VĂN LUẬN ÁN">I.6 THẨM ĐỊNH LUẬN VĂN LUẬN ÁN</option>
+            <option value="7.GIÁM SÁT THI THỰC HÀNH VẤN ĐÁP">II GIÁM SÁT THI THỰC HÀNH VẤN ĐÁP</option>
           </select>
           <button type="submit" class="button">Thống kê</button>
         </div>
@@ -328,15 +340,21 @@
     xmlhttp.send();
 
     // department
-    document.getElementById("existing-department").innerHTML = "";
+    existingDept = document.getElementById("existing-department");
+    existingDept.innerHTML = "";
+    dropdownDept = document.getElementById("drop-report-departments");
+    dropdownDept.innerHTML = "<option value=\"\">- Chọn đơn vị -</option>";
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         var depts = JSON.parse(this.responseText);
         var cnt = 1;
         depts.forEach(dept => {
-          document.getElementById("existing-department").innerHTML
-            += cnt++ + ". " + dept.name + "<br/>";
+          existingDept.innerHTML += cnt++ + ". " + dept.name + "<br/>";
+          var option = document.createElement("option");
+          option.value = dept.id + `.${dept.name}`;
+          option.text = dept.name;
+          dropdownDept.appendChild(option);
         });
       };
     };

@@ -959,20 +959,101 @@ app.post("/api/statistic", function (req, res) {
   const data = req.body;
   console.log("%s: %j", req.path, data);
 
-  connection.query(
-    "SELECT * FROM nodelogin.violation_records \
-     WHERE violation_records.createdDate BETWEEN ? AND ?;",
-    [data.fromDate, data.toDate],
-    function (error, results, fields) {
-      // If there is an issue with the query, output the error
-      if (error) {
-        console.log(error);
-        throw error;
-      }
-      // If success
-      // console.log(results);
-      res.statusCode = 200;
-      res.send(results);
+  let query = `
+    SELECT 
+      ROW_NUMBER() OVER() as 'STT',
+      classCode as 'Lớp',
+      semesterCode as 'Học Phần',
+      department.name as 'Đơn vị',
+      job_desc as 'Quá trình',
+      detail as 'Danh mục vi phạm',
+      detailInfo as 'Nội dung vi phạm',
+      preventionInfo as 'Biện pháp phòng tránh',
+      createdBy as 'Người nhập',
+      createdDate as 'Ngày nhập'
+    FROM violation_records
+    INNER JOIN violation_detail 
+    ON violation_records.detailid = violation_detail.detailid
+    INNER JOIN job_desc
+    ON violation_records.job = job_desc.job_id
+    INNER JOIN department
+    ON violation_records.departmentId = department.id
+    WHERE 1 = 1 `;
+  let filterDate = "Từ ";
+  let filterClass = "Lớp: ";
+  let filterDept = "Đơn vị: ";
+  let filterJob = "Quá trình: ";
+  let filterUser = "Người nhập: ";
+  if (data.fromDate && data.toDate) {
+    query += `AND violation_records.createdDate BETWEEN ${data.fromDate} AND ${data.toDate} `;
+    filterDate += `${data.fromDate} đến ${data.toDate} `;
+  }
+  if (data.classCode) {
+    query += `AND classCode = '${data.classCode}' `;
+    filterClass += `${data.classCode}`;
+  }
+  if (data.departmentId) {
+    query += `AND department.id = '${data.departmentId.split(".")[0]}' `;
+    filterDept += `${data.departmentId.split(".")[1]}`;
+  }
+  if (data.jobId) {
+    query += `AND violation_records.job = '${data.jobId.split(".")[0]}' `;
+    filterJob += `${data.jobId.split(".")[1]}`;
+  }
+  if (data.createdBy) {
+    query += `AND createdBy = '${data.createdBy}' `;
+    filterUser += `${data.createdBy}`;
+  }
+
+  connection.query(query, function (error, results, fields) {
+    // If there is an issue with the query, output the error
+    if (error) {
+      console.log(error);
+      throw error;
     }
-  );
+    // If success
+
+    let ws = XLSX.utils.json_to_sheet(results, {
+      paperSize: 9,
+      orientation: "landscape",
+      origin: "A9",
+    });
+    var wscols = [
+      { wch: 4 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 30 },
+      { wch: 30 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 15 },
+    ];
+    ws["!cols"] = wscols;
+
+    const date = new Date();
+    dateStr = `Ngày tạo: ${date.getDate()}-${date.getMonth()}-${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+
+    // ws["A1"].v = "BÁO CÁO THỐNG KÊ PHẦN MỀM KIỂM TRA GIÁM SÁT";
+    XLSX.utils.sheet_add_aoa(
+      ws,
+      [["BÁO CÁO THỐNG KÊ PHẦN MỀM KIỂM TRA GIÁM SÁT"]],
+      { origin: "A1" }
+    );
+    XLSX.utils.sheet_add_aoa(ws, [[dateStr]], { origin: "A2" });
+    XLSX.utils.sheet_add_aoa(ws, [["Bộ lọc: "]], { origin: "A3" });
+    XLSX.utils.sheet_add_aoa(ws, [[filterDate]], { origin: "B3" });
+    XLSX.utils.sheet_add_aoa(ws, [[filterClass]], { origin: "B4" });
+    XLSX.utils.sheet_add_aoa(ws, [[filterDept]], { origin: "B5" });
+    XLSX.utils.sheet_add_aoa(ws, [[filterJob]], { origin: "B6" });
+    XLSX.utils.sheet_add_aoa(ws, [[filterUser]], { origin: "B7" });
+
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Thống kê");
+    XLSX.writeFile(wb, __dirname + "/uploads/export.xlsx");
+
+    res.statusCode = 200;
+    res.end();
+    // res.download(__dirname + "/uploads/export.xlsx");
+  });
 });
