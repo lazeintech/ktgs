@@ -979,7 +979,7 @@ app.post("/api/statistic", function (req, res) {
     INNER JOIN department
     ON violation_records.departmentId = department.id
     WHERE 1 = 1 `;
-  let filterDate = "Từ ";
+  let filterDate = "Thời gian: ";
   let filterClass = "Lớp: ";
   let filterDept = "Đơn vị: ";
   let filterJob = "Quá trình: ";
