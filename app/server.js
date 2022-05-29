@@ -970,7 +970,7 @@ app.post("/api/statistic", function (req, res) {
       detailInfo as 'Nội dung vi phạm',
       preventionInfo as 'Biện pháp phòng tránh',
       createdBy as 'Người nhập',
-      createdDate as 'Ngày nhập'
+      DATE_FORMAT(createdDate, '%d/%m/%Y') as 'Ngày nhập'
     FROM violation_records
     INNER JOIN violation_detail 
     ON violation_records.detailid = violation_detail.detailid
@@ -1019,22 +1019,24 @@ app.post("/api/statistic", function (req, res) {
       origin: "A9",
     });
     var wscols = [
-      { wch: 4 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 30 },
-      { wch: 30 },
-      { wch: 30 },
-      { wch: 30 },
-      { wch: 15 },
-      { wch: 15 },
+      { wch: 5 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 10 },
+      { wch: 10 },
     ];
     ws["!cols"] = wscols;
 
     const date = new Date();
-    dateStr = `Ngày tạo: ${date.getDate()}-${date.getMonth()}-${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+    dateStr = `Ngày tạo: ${date.getDate()}/${
+      date.getMonth() + 1
+    }/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 
-    // ws["A1"].v = "BÁO CÁO THỐNG KÊ PHẦN MỀM KIỂM TRA GIÁM SÁT";
     XLSX.utils.sheet_add_aoa(
       ws,
       [["BÁO CÁO THỐNG KÊ PHẦN MỀM KIỂM TRA GIÁM SÁT"]],
@@ -1050,9 +1052,9 @@ app.post("/api/statistic", function (req, res) {
 
     let wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Thống kê");
-    XLSX.writeFile(wb, __dirname + "/uploads/export.xlsx");
+    XLSX.writeFile(wb, __dirname + "/uploads/Bao-cao-vi-pham.xlsx");
 
     res.statusCode = 200;
-    res.download(__dirname + "/uploads/export.xlsx");
+    res.download(__dirname + "/uploads/Bao-cao-vi-pham.xlsx");
   });
 });
