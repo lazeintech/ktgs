@@ -1035,7 +1035,9 @@ app.post("/api/statistic", function (req, res) {
     const date = new Date();
     dateStr = `Ngày tạo: ${date.getDate()}/${
       date.getMonth() + 1
-    }/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+    }/${date.getFullYear()} ${date.getHours()}:${
+      date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()
+    }`;
 
     XLSX.utils.sheet_add_aoa(
       ws,
